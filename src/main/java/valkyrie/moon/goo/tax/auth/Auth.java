@@ -22,14 +22,12 @@ public class Auth {
 
 	private static final String SSO_CLIENT_ID = "SSO_CLIENT_ID";
 
-		private String state = "i8q3GA6odmNadKoQlzHWVqhhhftTcxjyvzBJzl1f";
-		private OAuth auth;
-		private String args = "aef693bcc07d459689329e6a334c8a14";
 
 
-//	private String state = ""; // secret
-//	private OAuth auth;
-//	private String args = ""; // client id
+
+	private String state = ""; // secret
+	private OAuth auth;
+	private String args = ""; // client id
 
 	@Autowired
 	private ClientCredentialsRepository repository;
