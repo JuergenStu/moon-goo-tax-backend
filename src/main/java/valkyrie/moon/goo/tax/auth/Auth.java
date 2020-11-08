@@ -1,7 +1,5 @@
 package valkyrie.moon.goo.tax.auth;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,35 +10,53 @@ import com.google.common.collect.ImmutableSet;
 import net.troja.eve.esi.ApiClient;
 import net.troja.eve.esi.ApiClientBuilder;
 import net.troja.eve.esi.ApiException;
+import net.troja.eve.esi.api.CharacterApi;
+import net.troja.eve.esi.auth.JWT;
 import net.troja.eve.esi.auth.OAuth;
 import net.troja.eve.esi.auth.SsoScopes;
+import net.troja.eve.esi.model.CharacterResponse;
 import valkyrie.moon.goo.tax.auth.dto.ClientCredentials;
 import valkyrie.moon.goo.tax.auth.repo.ClientCredentialsRepository;
+import valkyrie.moon.goo.tax.character.Character;
+import valkyrie.moon.goo.tax.character.CharacterRepository;
 
 @Component
 public class Auth {
 
 	private static final String SSO_CLIENT_ID = "SSO_CLIENT_ID";
 
-
-
-
-	private String state = ""; // secret
 	private OAuth auth;
-	private String args = ""; // client id
+	private String args = "aef693bcc07d459689329e6a334c8a14";
 
 	@Autowired
 	private ClientCredentialsRepository repository;
+	@Autowired
+	private CharacterRepository characterRepository;
+	private ApiClient client;
 
 	public void authenticate(String state, String code) throws ApiException {
 		auth.finishFlow(code, state);
 		System.out.println("Refresh Token: " + auth.getRefreshToken());
-		repository.save(new ClientCredentials("1", auth.getClientId(), code));
+		repository.save(new ClientCredentials("1", auth.getClientId(), auth.getRefreshToken()));
+
+		// save char to db
+		JWT jwt = auth.getJWT();
+		if (jwt == null) {
+			//Handle missing Auth
+		}
+		JWT.Payload payload = jwt.getPayload();
+		Integer characterID = payload.getCharacterID();
+
+		CharacterApi api = new CharacterApi(client);
+
+		CharacterResponse character = api.getCharactersCharacterId(characterID, EsiApi.DATASOURCE, null);
+		characterRepository.save(new Character(characterID, character.getName(), character.getCorporationId(), true, null, null, null));
 	}
 
 	public String getAuthUrl() {
 
-		final ApiClient client;
+		final String state = "someSecret"; // doesn't matter for now
+
 
 		if (!args.isEmpty()) {
 			client = new ApiClientBuilder().clientID(args).build();
