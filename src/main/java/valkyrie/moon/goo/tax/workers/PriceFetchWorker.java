@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import valkyrie.moon.goo.tax.corp.wallet.CorpWalletFetcher;
 import valkyrie.moon.goo.tax.marketData.moonOre.MoonOreFetcher;
 
 @Component
@@ -14,10 +15,18 @@ public class PriceFetchWorker {
 
 	@Autowired
 	private MoonOreFetcher moonOreFetcher;
+	@Autowired
+	private CorpWalletFetcher corpWalletFetcher;
 
 	@Scheduled(fixedRate = 14400000) //= 4h
-	public void reportCurrentTime() {
+	public void fetchMoonOreData() {
 		LOG.info("Fetching market data...");
 		moonOreFetcher.buildMoonOreDatabase();
+	}
+
+	@Scheduled(fixedRate = 14400000) //= 4h
+	public void fetchWalletData() {
+		LOG.info("Fetching wallet data...");
+		corpWalletFetcher.fetchWalletData();
 	}
 }

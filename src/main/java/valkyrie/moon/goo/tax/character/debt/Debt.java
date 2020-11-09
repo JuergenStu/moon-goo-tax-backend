@@ -1,32 +1,20 @@
 package valkyrie.moon.goo.tax.character.debt;
 
-import org.springframework.data.annotation.Id;
+import java.util.Date;
 
 public class Debt {
 
-	@Id
-	public String id;
-
 	public Integer characterId;
-	public long hasPayed = 0;
-	public long toPay = 0;
+	public long hasPayed = 0L;
+	public long toPay = 0L;
 
-	public Debt() {
-	}
+	public Date lastUpdate;
 
-	public Debt(String id, Integer characterId, long hasPayed, long toPay) {
-		this.id = id;
+	public Debt(Integer characterId, long hasPayed, long toPay, Date lastUpdate) {
 		this.characterId = characterId;
 		this.hasPayed = hasPayed;
 		this.toPay = toPay;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
+		this.lastUpdate = lastUpdate;
 	}
 
 	public Integer getCharacterId() {
@@ -53,8 +41,16 @@ public class Debt {
 		this.toPay = toPay;
 	}
 
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
+
 	@Override
 	public String toString() {
-		return "Debt{" + "id='" + id + '\'' + ", characterId=" + characterId + ", hasPayed=" + hasPayed + ", toPay=" + toPay + '}';
+		return "Debt{" + "characterId=" + characterId + ", hasPayed=" + hasPayed + ", toPay=" + toPay + ", lastUpdate=" + lastUpdate + '}';
 	}
 }

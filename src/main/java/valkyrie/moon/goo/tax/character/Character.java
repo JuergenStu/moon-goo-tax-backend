@@ -4,10 +4,12 @@ import java.util.Date;
 import java.util.Map;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import valkyrie.moon.goo.tax.character.debt.Debt;
 import valkyrie.moon.goo.tax.marketData.dtos.MoonOre;
 
+@Document(collection = "chars")
 public class Character {
 
 	@Id
@@ -19,7 +21,6 @@ public class Character {
 	public boolean isLead;
 
 	public Debt dept;
-
 
 	public Map<Long, Date> lastUpdateObserverMapping;
 	public Map<Integer, MoonOre> minedMoonOre;

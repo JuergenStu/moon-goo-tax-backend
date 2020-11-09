@@ -1,5 +1,6 @@
 package valkyrie.moon.goo.tax.character;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -34,7 +35,7 @@ public class CharacterManagement {
 	}
 
 	public Character findCharacter(Integer id) {
-		Optional<Character> repoChar = characterRepository.findById(String.valueOf(id));
+		Optional<Character> repoChar = characterRepository.findById(id);
 		if (repoChar.isPresent()) {
 			return repoChar.get();
 		}
@@ -43,9 +44,7 @@ public class CharacterManagement {
 
 		try {
 			CharacterResponse characterResponse = characterApi.getCharactersCharacterId(id, EsiApi.DATASOURCE, null);
-			Character character = new Character(id, characterResponse.getName(),
-					characterResponse.getCorporationId(), false, new Debt(),
-					new HashMap<>(), new HashMap<>());
+			Character character = new Character(id, characterResponse.getName(), characterResponse.getCorporationId(), false, new Debt(id, 0L, 0L, new Date(943916400000L)), new HashMap<>(), new HashMap<>());
 
 			return character;
 		} catch (ApiException e) {
@@ -55,10 +54,18 @@ public class CharacterManagement {
 	}
 
 	public Character getLeadChar() {
-		return characterRepository.findByIsLead(true);
+		Character lead = characterRepository.findByIsLead(true);
+		if (lead == null) {
+			esiApi.prepareApi();
+		}
+		return lead;
 	}
 
 	public void saveChar(Character character) {
 		characterRepository.save(character);
+	}
+
+	public Character findByName(String name) {
+		return characterRepository.findByName(name);
 	}
 }

@@ -1,13 +1,11 @@
 package valkyrie.moon.goo.tax.corp;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -53,8 +51,11 @@ public class CorpMiningFetcher {
 	public void fetchMiningStatistics() {
 		industryApi.setApiClient(api.getApi());
 		Character leadChar = characterManagement.getLeadChar();
+		if (leadChar == null) {
+			LOG.warn("No char for fetching data found - please auth char first.");
+			return;
+		}
 		List<RefinedMoonOre> refinedMoonOres = refinedMoonOreRepository.findAll();
-		//		refinedMoonOres.stream().collect(Collectors.toMap(RefinedMoonOre::getId, refinedMoonOres));
 
 		try {
 			Map<Integer, Character> touchedChars = getMiningLog(leadChar.getCorpId(), refinedMoonOres);
@@ -69,6 +70,7 @@ public class CorpMiningFetcher {
 	}
 
 	private Map<Integer, Character> getMiningLog(Integer corpId, List<RefinedMoonOre> refinedMoonOres) throws ApiException {
+		LOG.info("Getting mining log from ESI.");
 		List<CorporationMiningObserversResponse> corporationCorporationIdMiningObservers = industryApi.getCorporationCorporationIdMiningObservers(corpId, EsiApi.DATASOURCE, null, null, null);
 		Set<Long> observerIds = new HashSet<>();
 		Map<Integer, Character> touchedChars = new HashMap<>();
@@ -104,6 +106,7 @@ public class CorpMiningFetcher {
 	}
 
 	private void calculateDebt(List<RefinedMoonOre> refinedMoonOres, Map<Integer, Character> touchedChars) {
+		LOG.info("Calculating mining debt...");
 		float refinementMultiplier = config.getRefinementMultiplier();
 		float tax = config.getTax();
 

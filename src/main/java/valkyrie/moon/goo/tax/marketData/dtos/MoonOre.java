@@ -1,13 +1,9 @@
 package valkyrie.moon.goo.tax.marketData.dtos;
 
-import java.util.List;
 import java.util.Map;
-
-import org.springframework.data.annotation.Id;
 
 public class MoonOre {
 
-	@Id
 	public String id;
 
 	public String name;
