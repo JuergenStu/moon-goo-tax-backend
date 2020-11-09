@@ -66,7 +66,6 @@ public class CorpWalletFetcher {
 		} catch (ApiException e) {
 			LOG.warn("WalletAPI not reachable or working...", e);
 		}
-
 	}
 
 	private void setDebt(CorporationWalletJournalResponse entry, Character character) {

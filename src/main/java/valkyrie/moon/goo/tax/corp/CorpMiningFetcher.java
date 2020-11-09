@@ -1,5 +1,8 @@
 package valkyrie.moon.goo.tax.corp;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -158,6 +161,10 @@ public class CorpMiningFetcher {
 				minedMoonOre.putIfAbsent(minedOreTypeId, ore);
 			}
 		}
+	}
+
+	public Date convertToDateViaInstant(LocalDate dateToConvert) {
+		return Date.from(dateToConvert.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
 	}
 
 }
