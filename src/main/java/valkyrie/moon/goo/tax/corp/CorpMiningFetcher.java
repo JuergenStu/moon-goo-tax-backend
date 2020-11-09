@@ -24,6 +24,7 @@ import valkyrie.moon.goo.tax.auth.EsiApi;
 import valkyrie.moon.goo.tax.character.Character;
 import valkyrie.moon.goo.tax.character.CharacterManagement;
 import valkyrie.moon.goo.tax.config.ConfigProperties;
+import valkyrie.moon.goo.tax.config.ConfigRepository;
 import valkyrie.moon.goo.tax.marketData.dtos.MoonOre;
 import valkyrie.moon.goo.tax.marketData.dtos.MoonOreReprocessConstants;
 import valkyrie.moon.goo.tax.marketData.dtos.RefinedMoonOre;
@@ -42,7 +43,7 @@ public class CorpMiningFetcher {
 	private CharacterManagement characterManagement;
 
 	@Autowired
-	private ConfigProperties config;
+	private ConfigRepository configRepository;
 
 	@Autowired
 	private MoonOreRepository moonOreRepository;
@@ -52,6 +53,9 @@ public class CorpMiningFetcher {
 	private final IndustryApi industryApi = new IndustryApi();
 
 	public void fetchMiningStatistics() {
+
+		// first initialize dates and config
+
 		industryApi.setApiClient(api.getApi());
 		Character leadChar = characterManagement.getLeadChar();
 		if (leadChar == null) {
@@ -77,10 +81,15 @@ public class CorpMiningFetcher {
 		List<CorporationMiningObserversResponse> corporationCorporationIdMiningObservers = industryApi.getCorporationCorporationIdMiningObservers(corpId, EsiApi.DATASOURCE, null, null, null);
 		Set<Long> observerIds = new HashSet<>();
 		Map<Integer, Character> touchedChars = new HashMap<>();
+
 		for (CorporationMiningObserversResponse corporationCorporationIdMiningObserver : corporationCorporationIdMiningObservers) {
 			observerIds.add(corporationCorporationIdMiningObserver.getObserverId());
 			List<CorporationMiningObserverResponse> corporationCorporationIdMiningObserversObserverId = industryApi.getCorporationCorporationIdMiningObserversObserverId(corpId, corporationCorporationIdMiningObserver.getObserverId(), EsiApi.DATASOURCE, null, null, null);
 			for (CorporationMiningObserverResponse corporationMiningObserverResponse : corporationCorporationIdMiningObserversObserverId) {
+				LocalDate lastUpdated = corporationMiningObserverResponse.getLastUpdated();
+
+				lastUpdated.isBefore(lastUpdated);
+
 				Integer id = corporationMiningObserverResponse.getCharacterId();
 
 				Character character = lookupCharacter(touchedChars, id);
@@ -110,6 +119,7 @@ public class CorpMiningFetcher {
 
 	private void calculateDebt(List<RefinedMoonOre> refinedMoonOres, Map<Integer, Character> touchedChars) {
 		LOG.info("Calculating mining debt...");
+		ConfigProperties config = configRepository.findAll().get(0);
 		float refinementMultiplier = config.getRefinementMultiplier();
 		float tax = config.getTax();
 

@@ -15,7 +15,7 @@ import valkyrie.moon.goo.tax.auth.EsiApi;
 import valkyrie.moon.goo.tax.character.Character;
 import valkyrie.moon.goo.tax.character.CharacterManagement;
 import valkyrie.moon.goo.tax.character.debt.Debt;
-import valkyrie.moon.goo.tax.config.ConfigProperties;
+import valkyrie.moon.goo.tax.config.ConfigRepository;
 
 @Component
 public class CorpWalletFetcher {
@@ -27,7 +27,7 @@ public class CorpWalletFetcher {
 	@Autowired
 	private CharacterManagement characterManagement;
 	@Autowired
-	private ConfigProperties config;
+	private ConfigRepository configRepository;
 
 	private final WalletApi walletApi = new WalletApi();
 
@@ -43,7 +43,7 @@ public class CorpWalletFetcher {
 		walletApi.setApiClient(api.getApi());
 		try {
 
-			List<CorporationWalletJournalResponse> corporationsCorporationIdWalletsDivisionJournal = walletApi.getCorporationsCorporationIdWalletsDivisionJournal(corporationId, config.getDivision(), EsiApi.DATASOURCE, null, null, null);
+			List<CorporationWalletJournalResponse> corporationsCorporationIdWalletsDivisionJournal = walletApi.getCorporationsCorporationIdWalletsDivisionJournal(corporationId, configRepository.findAll().get(0).getDivision(), EsiApi.DATASOURCE, null, null, null);
 
 			corporationsCorporationIdWalletsDivisionJournal.forEach(entry -> {
 				String reason = entry.getReason();

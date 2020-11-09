@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import net.troja.eve.esi.ApiClient;
 import net.troja.eve.esi.ApiClientBuilder;
-import net.troja.eve.esi.api.SsoApi;
 import okhttp3.OkHttpClient;
 import valkyrie.moon.goo.tax.auth.dto.ClientCredentials;
 import valkyrie.moon.goo.tax.auth.repo.ClientCredentialsRepository;
@@ -24,7 +23,6 @@ public class EsiApi {
 	public static final String LANGUAGE = "en-us";
 
 	public static String refreshToken;
-	public static String accessToken;
 	@Autowired
 	private ClientCredentialsRepository repository;
 

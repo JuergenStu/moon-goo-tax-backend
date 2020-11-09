@@ -11,7 +11,7 @@ Make sure you have following environment variables set:
 * routing on server side
 * config properties should be outside of project
 * make tax and refining configurable
-
+* make worker call order
 
 Find 
 
