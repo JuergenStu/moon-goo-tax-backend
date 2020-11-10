@@ -4,11 +4,9 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -23,8 +21,8 @@ import net.troja.eve.esi.model.CorporationMiningObserversResponse;
 import valkyrie.moon.goo.tax.auth.EsiApi;
 import valkyrie.moon.goo.tax.character.Character;
 import valkyrie.moon.goo.tax.character.CharacterManagement;
-import valkyrie.moon.goo.tax.config.ConfigProperties;
-import valkyrie.moon.goo.tax.config.ConfigRepository;
+import valkyrie.moon.goo.tax.config.PersistedConfigProperties;
+import valkyrie.moon.goo.tax.config.PersistedConfigPropertiesRepository;
 import valkyrie.moon.goo.tax.marketData.dtos.MoonOre;
 import valkyrie.moon.goo.tax.marketData.dtos.MoonOreReprocessConstants;
 import valkyrie.moon.goo.tax.marketData.dtos.RefinedMoonOre;
@@ -43,18 +41,31 @@ public class CorpMiningFetcher {
 	private CharacterManagement characterManagement;
 
 	@Autowired
-	private ConfigRepository configRepository;
+	private PersistedConfigPropertiesRepository persistedConfigPropertiesRepository;
 
 	@Autowired
 	private MoonOreRepository moonOreRepository;
 	@Autowired
 	private RefinedMoonOreRepository refinedMoonOreRepository;
+	@Autowired
+	private UpdateTimeTrackerRepository updateTimeTrackerRepository;
 
 	private final IndustryApi industryApi = new IndustryApi();
 
 	public void fetchMiningStatistics() {
 
 		// first initialize dates and config
+		UpdateTimeTracker updateTimeTracker = updateTimeTrackerRepository.findAll().get(0);
+		LocalDate today = LocalDate.of(2020, 10, 2);
+		//		LocalDate today = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+		//		LocalDate lastUpdate = LocalDate.of(2020, 10, 2);
+		LocalDate lastUpdate = updateTimeTracker.getLastUpdate();
+		//		if (!lastUpdate.isBefore(today)) {
+		//			// nothing to update yet!
+		//			LOG.info("last update: {} | current date: {} - nothing to do yet.", lastUpdate, today);
+		//			return;
+		//		}
 
 		industryApi.setApiClient(api.getApi());
 		Character leadChar = characterManagement.getLeadChar();
@@ -65,7 +76,7 @@ public class CorpMiningFetcher {
 		List<RefinedMoonOre> refinedMoonOres = refinedMoonOreRepository.findAll();
 
 		try {
-			Map<Integer, Character> touchedChars = getMiningLog(leadChar.getCorpId(), refinedMoonOres);
+			Map<Integer, Character> touchedChars = getMiningLog(leadChar.getCorpId(), refinedMoonOres, today);
 
 			// get debt
 			calculateDebt(refinedMoonOres, touchedChars);
@@ -76,31 +87,32 @@ public class CorpMiningFetcher {
 
 	}
 
-	private Map<Integer, Character> getMiningLog(Integer corpId, List<RefinedMoonOre> refinedMoonOres) throws ApiException {
+	private Map<Integer, Character> getMiningLog(Integer corpId, List<RefinedMoonOre> refinedMoonOres, LocalDate today) throws ApiException {
 		LOG.info("Getting mining log from ESI.");
 		List<CorporationMiningObserversResponse> corporationCorporationIdMiningObservers = industryApi.getCorporationCorporationIdMiningObservers(corpId, EsiApi.DATASOURCE, null, null, null);
-		Set<Long> observerIds = new HashSet<>();
 		Map<Integer, Character> touchedChars = new HashMap<>();
 
+		LOG.info("Processing {} stations...", corporationCorporationIdMiningObservers.size());
 		for (CorporationMiningObserversResponse corporationCorporationIdMiningObserver : corporationCorporationIdMiningObservers) {
-			observerIds.add(corporationCorporationIdMiningObserver.getObserverId());
-			List<CorporationMiningObserverResponse> corporationCorporationIdMiningObserversObserverId = industryApi.getCorporationCorporationIdMiningObserversObserverId(corpId, corporationCorporationIdMiningObserver.getObserverId(), EsiApi.DATASOURCE, null, null, null);
-			for (CorporationMiningObserverResponse corporationMiningObserverResponse : corporationCorporationIdMiningObserversObserverId) {
-				LocalDate lastUpdated = corporationMiningObserverResponse.getLastUpdated();
+			List<CorporationMiningObserverResponse> observerResponse = industryApi.getCorporationCorporationIdMiningObserversObserverId(corpId, corporationCorporationIdMiningObserver.getObserverId(), EsiApi.DATASOURCE, null, null, null);
+			LOG.info("Processing {} mining log entries...", observerResponse.size());
+			for (CorporationMiningObserverResponse miner : observerResponse) {
+				LocalDate lastUpdated = miner.getLastUpdated();
+				//				lastUpdated.plus();
 
 				lastUpdated.isBefore(lastUpdated);
 
-				Integer id = corporationMiningObserverResponse.getCharacterId();
+				Integer id = miner.getCharacterId();
 
 				Character character = lookupCharacter(touchedChars, id);
 
 				Map<Integer, MoonOre> minedMoonOre = character.getMinedMoonOre();
-				Integer minedOreTypeId = corporationMiningObserverResponse.getTypeId();
+				Integer minedOreTypeId = miner.getTypeId();
 
 				prepareMoonOre(minedMoonOre, minedOreTypeId, refinedMoonOres);
 
 				long minedAmount = minedMoonOre.get(minedOreTypeId).getMinedAmount();// total mined for this type
-				minedMoonOre.get(minedOreTypeId).setMinedAmount(minedAmount + corporationMiningObserverResponse.getQuantity());
+				minedMoonOre.get(minedOreTypeId).setMinedAmount(minedAmount + miner.getQuantity());
 				touchedChars.put(character.getId(), character);
 			}
 		}
@@ -119,7 +131,7 @@ public class CorpMiningFetcher {
 
 	private void calculateDebt(List<RefinedMoonOre> refinedMoonOres, Map<Integer, Character> touchedChars) {
 		LOG.info("Calculating mining debt...");
-		ConfigProperties config = configRepository.findAll().get(0);
+		PersistedConfigProperties config = persistedConfigPropertiesRepository.findById(1).get();
 		float refinementMultiplier = config.getRefinementMultiplier();
 		float tax = config.getTax();
 
