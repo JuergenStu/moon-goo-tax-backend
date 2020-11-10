@@ -2,6 +2,8 @@ package valkyrie.moon.goo.tax.auth;
 
 import java.util.Date;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,7 @@ import valkyrie.moon.goo.tax.auth.repo.ClientCredentialsRepository;
 import valkyrie.moon.goo.tax.character.Character;
 import valkyrie.moon.goo.tax.character.CharacterRepository;
 import valkyrie.moon.goo.tax.character.debt.Debt;
+import valkyrie.moon.goo.tax.workers.DebtWorker;
 
 @Component
 public class Auth {
@@ -34,6 +37,11 @@ public class Auth {
 	private ClientCredentialsRepository repository;
 	@Autowired
 	private CharacterRepository characterRepository;
+	@Autowired
+	private DebtWorker debtWorker;
+	@Autowired
+	private EsiApi esiApi;
+
 	private ApiClient client;
 
 	public void authenticate(String state, String code) throws ApiException {
@@ -51,14 +59,27 @@ public class Auth {
 
 		CharacterApi api = new CharacterApi(client);
 
-		CharacterResponse character = api.getCharactersCharacterId(characterID, EsiApi.DATASOURCE, null);
-		characterRepository.save(new Character(characterID, character.getName(), character.getCorporationId(), true, new Debt(characterID, 0L, 0L, new Date(943916400000L)), null, null));
+		CharacterResponse character = api
+				.getCharactersCharacterId(characterID, EsiApi.DATASOURCE, null);
+		characterRepository
+				.save(new Character(characterID, character.getName(), character.getCorporationId(),
+						true, new Debt(characterID, 0L, 0L, new Date(943916400000L)), null, null));
+
+		// now start processing...
+		startProcessing();
+	}
+
+	private void startProcessing() {
+		esiApi.prepareApi();
+		ExecutorService executor = Executors.newFixedThreadPool(1);
+		executor.submit(() -> {
+			debtWorker.fetchMoonLedgerData();
+		});
 	}
 
 	public String getAuthUrl() {
 
 		final String state = "someSecret"; // doesn't matter for now
-
 
 		if (!args.isEmpty()) {
 			client = new ApiClientBuilder().clientID(args).build();

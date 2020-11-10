@@ -1,4 +1,4 @@
-package valkyrie.moon.goo.tax.workers;
+package valkyrie.moon.goo.tax.statistics;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,18 +11,15 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import valkyrie.moon.goo.tax.character.Character;
 import valkyrie.moon.goo.tax.character.CharacterRepository;
-import valkyrie.moon.goo.tax.statistics.Statistics;
-import valkyrie.moon.goo.tax.statistics.StatisticsRepository;
 
 @Component
-public class StatisticsWorker {
+public class StatisticsCalculator {
 
-	private Logger LOG = LoggerFactory.getLogger(StatisticsWorker.class);
+	private Logger LOG = LoggerFactory.getLogger(StatisticsCalculator.class);
 
 	@Autowired
 	private StatisticsRepository statisticsRepository;
@@ -30,8 +27,7 @@ public class StatisticsWorker {
 	@Autowired
 	private CharacterRepository characterRepository;
 
-	@Scheduled(fixedRate = 14400000) //= 4h
-	public void fetchMoonOreData() {
+	public void calculateStatistics() {
 		LOG.info("Creating statistics...");
 
 		Statistics statistics = new Statistics();

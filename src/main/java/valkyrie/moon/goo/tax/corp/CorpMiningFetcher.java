@@ -28,6 +28,7 @@ import valkyrie.moon.goo.tax.marketData.dtos.MoonOreReprocessConstants;
 import valkyrie.moon.goo.tax.marketData.dtos.RefinedMoonOre;
 import valkyrie.moon.goo.tax.marketData.moonOre.MoonOreRepository;
 import valkyrie.moon.goo.tax.marketData.refinedMoonOre.RefinedMoonOreRepository;
+import valkyrie.moon.goo.tax.statistics.StatisticsCalculator;
 
 @Component
 public class CorpMiningFetcher {
@@ -49,21 +50,29 @@ public class CorpMiningFetcher {
 	private RefinedMoonOreRepository refinedMoonOreRepository;
 	@Autowired
 	private UpdateTimeTrackerRepository updateTimeTrackerRepository;
+	@Autowired
+	private StatisticsCalculator statisticsCalculator;
 
 	private final IndustryApi industryApi = new IndustryApi();
 
 	public void fetchMiningStatistics() {
 
 		// first initialize dates and config
-		UpdateTimeTracker updateTimeTracker = updateTimeTrackerRepository.findAll().get(0);
+		List<UpdateTimeTracker> all = updateTimeTrackerRepository.findAll();
+		if (all.size() < 1) {
+			return;
+		}
+		UpdateTimeTracker updateTimeTracker = all.get(0);
 		LocalDate today = LocalDate.of(2020, 10, 2);
-		//		LocalDate today = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		//		LocalDate today = new Date().toInstant().atZone(ZoneId.systemDefault())
+		//		.toLocalDate();
 
 		//		LocalDate lastUpdate = LocalDate.of(2020, 10, 2);
 		LocalDate lastUpdate = updateTimeTracker.getLastUpdate();
 		//		if (!lastUpdate.isBefore(today)) {
 		//			// nothing to update yet!
-		//			LOG.info("last update: {} | current date: {} - nothing to do yet.", lastUpdate, today);
+		//			LOG.info("last update: {} | current date: {} - nothing to do yet.",
+		//			lastUpdate, today);
 		//			return;
 		//		}
 
@@ -76,11 +85,14 @@ public class CorpMiningFetcher {
 		List<RefinedMoonOre> refinedMoonOres = refinedMoonOreRepository.findAll();
 
 		try {
-			Map<Integer, Character> touchedChars = getMiningLog(leadChar.getCorpId(), refinedMoonOres, today);
+			Map<Integer, Character> touchedChars = getMiningLog(leadChar.getCorpId(),
+					refinedMoonOres, today);
 
 			// get debt
 			calculateDebt(refinedMoonOres, touchedChars);
 
+			// calculate statistics
+			statisticsCalculator.calculateStatistics();
 		} catch (ApiException apiException) {
 			apiException.printStackTrace();
 		}

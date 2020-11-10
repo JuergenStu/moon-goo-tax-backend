@@ -35,6 +35,9 @@ public class CharacterManagement {
 	}
 
 	public Character findCharacter(Integer id) {
+		if (characterApi.getApiClient() == null) {
+			init();
+		}
 		Optional<Character> repoChar = characterRepository.findById(id);
 		if (repoChar.isPresent()) {
 			return repoChar.get();
@@ -43,8 +46,12 @@ public class CharacterManagement {
 		// else fetch all information
 
 		try {
-			CharacterResponse characterResponse = characterApi.getCharactersCharacterId(id, EsiApi.DATASOURCE, null);
-			Character character = new Character(id, characterResponse.getName(), characterResponse.getCorporationId(), false, new Debt(id, 0L, 0L, new Date(943916400000L)), new HashMap<>(), new HashMap<>());
+			CharacterResponse characterResponse = characterApi
+					.getCharactersCharacterId(id, EsiApi.DATASOURCE, null);
+			Character character = new Character(id, characterResponse.getName(),
+					characterResponse.getCorporationId(), false,
+					new Debt(id, 0L, 0L, new Date(943916400000L)), new HashMap<>(),
+					new HashMap<>());
 
 			return character;
 		} catch (ApiException e) {
