@@ -20,14 +20,26 @@ public class ConfigurationController {
 	public String config() {
 		PersistedConfigProperties configProperties = repository.findById(1).get();
 
-		String html = "<form action=\"/configuration/save/\" method=\"get\" target=\"_blank\">\n" + "    <label for=\"refinementMultiplier\">refinementMultiplier:</label>\n" + "    <input type=\"text\" id=\"refinementMultiplier\" name=\"refinementMultiplier\" value=\"%s\"><br><br>\n" + "    <label for=\"tax\">Tax:</label>\n" + "    <input type=\"text\" id=\"tax\" name=\"tax\" value=\"%s\"><br><br>\n" + "    <label for=\"division\">Division:</label>\n"
-				+ "    <input type=\"text\" id=\"division\" name=\"division\" value=\"%s\"><br><br>\n" + "    <input type=\"submit\" value=\"Submit\">\n" + "  </form>";
+		String html = "<form action=\"/configuration/save/\" method=\"get\" target=\"_blank\">\n"
+				+ "    <label for=\"refinementMultiplier\">refinementMultiplier:</label>\n"
+				+ "    <input type=\"text\" id=\"refinementMultiplier\" "
+				+ "name=\"refinementMultiplier\" value=\"%s\"><br><br>\n"
+				+ "    <label for=\"tax\">Tax:</label>\n"
+				+ "    <input type=\"text\" id=\"tax\" name=\"tax\" value=\"%s\"><br><br>\n"
+				+ "    <label for=\"division\">Division:</label>\n"
+				+ "    <input type=\"text\" id=\"division\" name=\"division\" "
+				+ "value=\"%s\"><br><br>\n" + "    <input type=\"submit\" value=\"Submit\">\n"
+				+ "  </form>";
 
-		return String.format(html, configProperties.getRefinementMultiplier(), configProperties.getTax(), configProperties.getDivision());
+		return String
+				.format(html, configProperties.getRefinementMultiplier(),
+						configProperties.getTax(),
+						configProperties.getDivision());
 	}
 
 	@RequestMapping("/save")
-	public String changeSettings(@RequestParam("refinementMultiplier") float refinementMultiplier, @RequestParam("tax") float tax, @RequestParam("division") int division) {
+	public String changeSettings(@RequestParam("refinementMultiplier") float refinementMultiplier,
+			@RequestParam("tax") float tax, @RequestParam("division") int division) {
 
 		PersistedConfigProperties configProperties = repository.findById(1).get();
 

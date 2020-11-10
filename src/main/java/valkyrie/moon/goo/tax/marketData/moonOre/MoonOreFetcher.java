@@ -45,33 +45,38 @@ public class MoonOreFetcher extends EsiFetcher {
 
 		for (String moonOreGroupId : MOON_ORE_GROUP_IDS) {
 			try {
-				UniverseGroups group = getUniverseGroups(new URL(String.format(GROUP_ID_URLS, moonOreGroupId)));
+				UniverseGroups group = getUniverseGroups(
+						new URL(String.format(GROUP_ID_URLS, moonOreGroupId)));
 
 				// get clear names
 				ObjectMapper mapper = new ObjectMapper();
-				List<TypeName> typeNames = fetchNames(mapper.writeValueAsString(group.getTypes()), new URL(NAME_URLS), TypeName.class);
+				List<TypeName> typeNames = fetchNames(mapper.writeValueAsString(group.getTypes()),
+						new URL(NAME_URLS), TypeName.class);
 
-				for (TypeName typeName : typeNames) {
-					MoonOre ore = new MoonOre();
-					ore.setId(typeName.getId());
-					setMultiplier(typeName, ore);
-
-					String[] splittedName = typeName.getName().split(" ");
-
-					if (splittedName.length > 1) {
-						ore.setName(splittedName[1]);
-					} else {
-						ore.setName(splittedName[0]);
-					}
-
-					// add prices to ore
-
-					moonOreRepository.save(ore);
-
-				}
+				prepareAndSave(typeNames);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+
+	private void prepareAndSave(List<TypeName> typeNames) {
+		for (TypeName typeName : typeNames) {
+			MoonOre ore = new MoonOre();
+			ore.setId(typeName.getId());
+			setMultiplier(typeName, ore);
+
+			String[] splittedName = typeName.getName().split(" ");
+			ore.setVisualName(typeName.getName());
+
+			if (splittedName.length > 1) {
+				ore.setName(splittedName[1]);
+			} else {
+				ore.setName(splittedName[0]);
+			}
+
+			// add prices to ore
+			moonOreRepository.save(ore);
 		}
 	}
 

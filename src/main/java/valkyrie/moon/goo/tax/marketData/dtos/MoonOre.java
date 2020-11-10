@@ -7,6 +7,7 @@ public class MoonOre {
 	public String id;
 
 	public String name;
+	public String visualName;
 	public double multiplier;
 
 	public long minedAmount;
@@ -16,9 +17,11 @@ public class MoonOre {
 	public MoonOre() {
 	}
 
-	public MoonOre(String id, String name, double multiplier, long minedAmount, Map<Integer, RefinedMoonOre> refinedMoonOres) {
+	public MoonOre(String id, String name, String visualName, double multiplier, long minedAmount,
+			Map<Integer, RefinedMoonOre> refinedMoonOres) {
 		this.id = id;
 		this.name = name;
+		this.visualName = visualName;
 		this.multiplier = multiplier;
 		this.minedAmount = minedAmount;
 		this.refinedMoonOres = refinedMoonOres;
@@ -64,8 +67,18 @@ public class MoonOre {
 		this.refinedMoonOres = refinedMoonOres;
 	}
 
+	public String getVisualName() {
+		return visualName;
+	}
+
+	public void setVisualName(String visualName) {
+		this.visualName = visualName;
+	}
+
 	@Override
 	public String toString() {
-		return "MoonOre{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", multiplier=" + multiplier + ", minedAmount=" + minedAmount + ", refinedMoonOres=" + refinedMoonOres + '}';
+		return "MoonOre{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", visualName='"
+				+ visualName + '\'' + ", multiplier=" + multiplier + ", minedAmount=" + minedAmount
+				+ ", refinedMoonOres=" + refinedMoonOres + '}';
 	}
 }
