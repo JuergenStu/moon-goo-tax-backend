@@ -14,11 +14,14 @@ import valkyrie.moon.goo.tax.character.Character;
 public class InformationController {
 
 	@Autowired
+	private CharacterViewRepository characterViewRepository;
+
+	@Autowired
 	private ApiHelper apiHelper;
 
 	@RequestMapping("/characters")
-	public List<Character> getCharacters() {
-		return apiHelper.getFormattedCharacters();
+	public List<CharacterView> getCharacters() {
+		return characterViewRepository.findAll();
 	}
 
 	@RequestMapping("/characters/{id}")

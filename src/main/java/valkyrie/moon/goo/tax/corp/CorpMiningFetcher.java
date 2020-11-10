@@ -18,6 +18,7 @@ import net.troja.eve.esi.ApiException;
 import net.troja.eve.esi.api.IndustryApi;
 import net.troja.eve.esi.model.CorporationMiningObserverResponse;
 import net.troja.eve.esi.model.CorporationMiningObserversResponse;
+import valkyrie.moon.goo.tax.api.CharacterViewProcessor;
 import valkyrie.moon.goo.tax.auth.EsiApi;
 import valkyrie.moon.goo.tax.character.Character;
 import valkyrie.moon.goo.tax.character.CharacterManagement;
@@ -50,6 +51,8 @@ public class CorpMiningFetcher {
 	private RefinedMoonOreRepository refinedMoonOreRepository;
 	@Autowired
 	private UpdateTimeTrackerRepository updateTimeTrackerRepository;
+	@Autowired
+	private CharacterViewProcessor characterViewProcessor;
 	@Autowired
 	private StatisticsCalculator statisticsCalculator;
 
@@ -85,14 +88,15 @@ public class CorpMiningFetcher {
 		List<RefinedMoonOre> refinedMoonOres = refinedMoonOreRepository.findAll();
 
 		try {
-			Map<Integer, Character> touchedChars = getMiningLog(leadChar.getCorpId(),
-					refinedMoonOres, today);
+			Map<Integer, Character> touchedChars = getMiningLog(leadChar.getCorpId(), refinedMoonOres, today);
 
 			// get debt
 			calculateDebt(refinedMoonOres, touchedChars);
 
 			// calculate statistics
 			statisticsCalculator.calculateStatistics();
+			// and prepare character views
+			characterViewProcessor.prepareCharacterView();
 		} catch (ApiException apiException) {
 			apiException.printStackTrace();
 		}
