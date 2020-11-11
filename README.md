@@ -13,9 +13,10 @@ Make sure you have following environment variables set:
 * routing on server side
 * config properties should be outside of project
 * ~~make tax and refining configurable~~
-* make worker call order
+* ~~make worker call order~~
 * support for dropping all data except lead char - so we dont have to reauthenticate
-* make endpoints to fetch data?
+* ~~make endpoints to fetch data?~~
+* make the workers run at 12 utc for the day before!
 
 Find 
 

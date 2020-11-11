@@ -44,6 +44,7 @@ public class CharacterViewProcessor {
 		Map<String, Integer> minedOre = new HashMap<>();
 		prepareMinedOre(character, minedOre);
 		characterView.setMinedOre(minedOre);
+		characterView.setDebt(character.getDept().getToPay());
 		characterViews.add(characterView);
 	}
 

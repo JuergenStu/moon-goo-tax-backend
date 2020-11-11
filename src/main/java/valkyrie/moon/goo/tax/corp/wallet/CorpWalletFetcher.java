@@ -1,5 +1,7 @@
 package valkyrie.moon.goo.tax.corp.wallet;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
 
@@ -51,12 +53,17 @@ public class CorpWalletFetcher {
 					return;
 				}
 
-				// valid character
-				Character character = characterManagement.findByName(reason);
+				Character character = getCharacterFromDb(reason);
 				if (character == null) {
-					LOG.warn("Did not find character {} in DB - maybe wrong reason", reason);
 					return;
 				}
+				OffsetDateTime date = entry.getDate();
+				OffsetDateTime lastUpdate = character.getDept().getLastUpdate().toInstant().atOffset(ZoneOffset.UTC);
+				if (lastUpdate.isAfter(date)) {
+					// no need to update!
+					return;
+				}
+
 				setDebt(entry, character);
 
 				characterManagement.saveChar(character);
@@ -66,6 +73,16 @@ public class CorpWalletFetcher {
 		} catch (ApiException e) {
 			LOG.warn("WalletAPI not reachable or working...", e);
 		}
+	}
+
+	private Character getCharacterFromDb(String reason) {
+		// valid character
+		Character character = characterManagement.findByName(reason);
+		if (character == null) {
+			LOG.warn("Did not find character {} in DB - maybe wrong reason", reason);
+			return null;
+		}
+		return character;
 	}
 
 	private void setDebt(CorporationWalletJournalResponse entry, Character character) {
