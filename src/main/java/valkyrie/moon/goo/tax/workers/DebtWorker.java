@@ -16,7 +16,8 @@ public class DebtWorker {
 	@Autowired
 	private CorpMiningFetcher miningFetcher;
 
-	@Scheduled(fixedRate = 14400000) //= 4h
+	// cron job: everyday at 14:00
+	@Scheduled(cron = "0 14 * * * ?")
 	public void fetchMoonLedgerData() {
 		LOG.info("Fetching mining statistics...");
 		miningFetcher.fetchMiningStatistics();
