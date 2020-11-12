@@ -31,10 +31,7 @@ public class EsiApi {
 		List<ClientCredentials> clients = repository.findAll();
 		for (ClientCredentials client : clients) {
 			api = new ApiClientBuilder().clientID(client.getApplicationId()).refreshToken(client.getRefreshToken()).okHttpClient(getHttpClient()).build();
-
 			refreshToken = client.refreshToken;
-
-			System.out.println("client.refreshtoken: " + refreshToken);
 		}
 	}
 

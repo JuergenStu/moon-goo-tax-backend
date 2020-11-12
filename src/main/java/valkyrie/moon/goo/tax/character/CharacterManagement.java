@@ -2,6 +2,7 @@ package valkyrie.moon.goo.tax.character;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
@@ -74,5 +75,9 @@ public class CharacterManagement {
 
 	public Character findByName(String name) {
 		return characterRepository.findByName(name);
+	}
+
+	public void saveAll(List<Character> characters) {
+		characterRepository.saveAll(characters);
 	}
 }

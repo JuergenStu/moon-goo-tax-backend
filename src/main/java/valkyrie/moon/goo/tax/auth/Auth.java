@@ -46,7 +46,6 @@ public class Auth {
 
 	public void authenticate(String state, String code) throws ApiException {
 		auth.finishFlow(code, state);
-		System.out.println("Refresh Token: " + auth.getRefreshToken());
 		repository.save(new ClientCredentials("1", auth.getClientId(), auth.getRefreshToken()));
 
 		// save char to db

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.troja.eve.esi.ApiException;
 import valkyrie.moon.goo.tax.corp.wallet.CorpWalletFetcher;
+import valkyrie.moon.goo.tax.workers.DebtWorker;
 
 @RestController
 @RequestMapping("/")
@@ -18,6 +19,9 @@ public class AuthController {
 
 	@Autowired
 	private CorpWalletFetcher walletFetcher;
+
+	@Autowired
+	private DebtWorker debtWorker;
 
 	@RequestMapping("/")
 	public String index() {
@@ -38,11 +42,17 @@ public class AuthController {
 			e.printStackTrace();
 		}
 
-		return "You can close the window now -- code: " +  code + " - state: " + state;
+		return "You can close the window now -- code: " + code + " - state: " + state;
 	}
 
 	@RequestMapping("/fetch")
 	public void fetchWalletData() {
 		walletFetcher.fetchWalletData();
 	}
+
+	@RequestMapping("/mining")
+	public void fetchMiningData() {
+		debtWorker.fetchMoonLedgerData();
+	}
+
 }

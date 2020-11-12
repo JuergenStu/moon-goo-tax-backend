@@ -38,7 +38,7 @@ public class StartupApplicationListener implements ApplicationListener<ContextRe
 		}
 
 		LocalDate startDate = config.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		updateTimeTrackerRepository.save(new UpdateTimeTracker(startDate, startDate));
+		updateTimeTrackerRepository.save(new UpdateTimeTracker(1, startDate, startDate));
 		PersistedConfigProperties persistedConfig = new PersistedConfigProperties();
 		persistedConfig.setDivision(config.getDivision());
 		persistedConfig.setRefinementMultiplier(config.getRefinementMultiplier());

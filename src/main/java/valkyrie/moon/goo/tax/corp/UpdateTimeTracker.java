@@ -2,17 +2,30 @@ package valkyrie.moon.goo.tax.corp;
 
 import java.time.LocalDate;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
 public class UpdateTimeTracker {
 
+	@Id
+	private int id = 1;
+
 	private LocalDate firstUpdate; // first update given from config
 	private LocalDate lastUpdate; // dynamic - will change on every update
 
-	public UpdateTimeTracker(LocalDate firstUpdate, LocalDate lastUpdate) {
+	public UpdateTimeTracker(int id, LocalDate firstUpdate, LocalDate lastUpdate) {
+		this.id = id;
 		this.firstUpdate = firstUpdate;
 		this.lastUpdate = lastUpdate;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public LocalDate getFirstUpdate() {
@@ -33,6 +46,6 @@ public class UpdateTimeTracker {
 
 	@Override
 	public String toString() {
-		return "UpdateTimeTracker{" + "firstUpdate=" + firstUpdate + ", lastUpdate=" + lastUpdate + '}';
+		return "UpdateTimeTracker{" + "id=" + id + ", firstUpdate=" + firstUpdate + ", lastUpdate=" + lastUpdate + '}';
 	}
 }

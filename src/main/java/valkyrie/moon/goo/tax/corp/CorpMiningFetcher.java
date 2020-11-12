@@ -1,7 +1,7 @@
 package valkyrie.moon.goo.tax.corp;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +18,7 @@ import net.troja.eve.esi.ApiException;
 import net.troja.eve.esi.api.IndustryApi;
 import net.troja.eve.esi.model.CorporationMiningObserverResponse;
 import net.troja.eve.esi.model.CorporationMiningObserversResponse;
+import valkyrie.moon.goo.tax.DateUtils;
 import valkyrie.moon.goo.tax.api.CharacterViewProcessor;
 import valkyrie.moon.goo.tax.auth.EsiApi;
 import valkyrie.moon.goo.tax.character.Character;
@@ -57,82 +58,99 @@ public class CorpMiningFetcher {
 	private StatisticsCalculator statisticsCalculator;
 
 	private final IndustryApi industryApi = new IndustryApi();
+	private UpdateTimeTracker updateTimeTracker;
 
 	public void fetchMiningStatistics() {
-
-		// first initialize dates and config
-		List<UpdateTimeTracker> all = updateTimeTrackerRepository.findAll();
-		if (all.size() < 1) {
+		LocalDate today = checkDateRequirements();
+		if (today == null)
 			return;
-		}
-		UpdateTimeTracker updateTimeTracker = all.get(0);
-		LocalDate today = LocalDate.of(2020, 10, 2);
-		//		LocalDate today = new Date().toInstant().atZone(ZoneId.systemDefault())
-		//		.toLocalDate();
 
-		//		LocalDate lastUpdate = LocalDate.of(2020, 10, 2);
-		LocalDate lastUpdate = updateTimeTracker.getLastUpdate();
-		//		if (!lastUpdate.isBefore(today)) {
-		//			// nothing to update yet!
-		//			LOG.info("last update: {} | current date: {} - nothing to do yet.",
-		//			lastUpdate, today);
-		//			return;
-		//		}
-
-		industryApi.setApiClient(api.getApi());
 		Character leadChar = characterManagement.getLeadChar();
 		if (leadChar == null) {
 			LOG.warn("No char for fetching data found - please auth char first.");
 			return;
 		}
+		industryApi.setApiClient(api.getApi());
 		List<RefinedMoonOre> refinedMoonOres = refinedMoonOreRepository.findAll();
 
 		try {
-			Map<Integer, Character> touchedChars = getMiningLog(leadChar.getCorpId(), refinedMoonOres, today);
-
-			// get debt
-			calculateDebt(refinedMoonOres, touchedChars);
-
-			// calculate statistics
-			statisticsCalculator.calculateStatistics();
-			// and prepare character views
-			characterViewProcessor.prepareCharacterView();
+			calculateAll(today, leadChar, refinedMoonOres);
 		} catch (ApiException apiException) {
-			apiException.printStackTrace();
+			LOG.warn("Had error while processing mining ledger.", apiException);
 		}
+		updateTimeTrackerRepository
+				.save(new UpdateTimeTracker(1, updateTimeTracker.getFirstUpdate(), DateUtils.convertToLocalDateViaInstant(new Date())));
+	}
 
+	private void calculateAll(LocalDate today, Character leadChar, List<RefinedMoonOre> refinedMoonOres) throws ApiException {
+		Map<Integer, Character> touchedChars = getMiningLog(leadChar.getCorpId(), refinedMoonOres, today);
+
+		// get debt
+		calculateDebt(refinedMoonOres, touchedChars);
+		// calculate statistics
+		statisticsCalculator.calculateStatistics();
+		// and prepare character views
+		characterViewProcessor.prepareCharacterView();
+	}
+
+	private LocalDate checkDateRequirements() {
+		// first initialize dates and config
+		Optional<UpdateTimeTracker> all = updateTimeTrackerRepository.findById(1);
+		if (!all.isPresent()) {
+			return null;
+		}
+		updateTimeTracker = all.get();
+		LocalDate today = DateUtils.convertToLocalDateViaInstant(new Date());
+
+		LocalDate lastUpdate = updateTimeTracker.getLastUpdate();
+		if (!lastUpdate.isBefore(today)) {
+			// nothing to update yet!
+			LOG.info("last update: {} | current date: {} - nothing to do yet.", lastUpdate, today);
+			return null;
+		}
+		return today;
 	}
 
 	private Map<Integer, Character> getMiningLog(Integer corpId, List<RefinedMoonOre> refinedMoonOres, LocalDate today) throws ApiException {
 		LOG.info("Getting mining log from ESI.");
-		List<CorporationMiningObserversResponse> corporationCorporationIdMiningObservers = industryApi.getCorporationCorporationIdMiningObservers(corpId, EsiApi.DATASOURCE, null, null, null);
+		List<CorporationMiningObserversResponse> corpMiningObservers = industryApi
+				.getCorporationCorporationIdMiningObservers(corpId, EsiApi.DATASOURCE, null, null, null);
 		Map<Integer, Character> touchedChars = new HashMap<>();
 
-		LOG.info("Processing {} stations...", corporationCorporationIdMiningObservers.size());
-		for (CorporationMiningObserversResponse corporationCorporationIdMiningObserver : corporationCorporationIdMiningObservers) {
-			List<CorporationMiningObserverResponse> observerResponse = industryApi.getCorporationCorporationIdMiningObserversObserverId(corpId, corporationCorporationIdMiningObserver.getObserverId(), EsiApi.DATASOURCE, null, null, null);
+		LOG.info("Processing {} stations...", corpMiningObservers.size());
+		for (CorporationMiningObserversResponse observersResponse : corpMiningObservers) {
+			List<CorporationMiningObserverResponse> observerResponse = industryApi
+					.getCorporationCorporationIdMiningObserversObserverId(corpId, observersResponse.getObserverId(), EsiApi.DATASOURCE, null, null,
+							null);
 			LOG.info("Processing {} mining log entries...", observerResponse.size());
-			for (CorporationMiningObserverResponse miner : observerResponse) {
-				LocalDate lastUpdated = miner.getLastUpdated();
-				//				lastUpdated.plus();
-
-				lastUpdated.isBefore(lastUpdated);
-
-				Integer id = miner.getCharacterId();
-
-				Character character = lookupCharacter(touchedChars, id);
-
-				Map<Integer, MoonOre> minedMoonOre = character.getMinedMoonOre();
-				Integer minedOreTypeId = miner.getTypeId();
-
-				prepareMoonOre(minedMoonOre, minedOreTypeId, refinedMoonOres);
-
-				long minedAmount = minedMoonOre.get(minedOreTypeId).getMinedAmount();// total mined for this type
-				minedMoonOre.get(minedOreTypeId).setMinedAmount(minedAmount + miner.getQuantity());
-				touchedChars.put(character.getId(), character);
-			}
+			processObserverEntries(refinedMoonOres, touchedChars, observerResponse, today);
 		}
 		return touchedChars;
+	}
+
+	private void processObserverEntries(List<RefinedMoonOre> refinedMoonOres, Map<Integer, Character> touchedChars,
+			List<CorporationMiningObserverResponse> observerResponse, LocalDate today) {
+		for (CorporationMiningObserverResponse miner : observerResponse) {
+			LocalDate lastUpdated = miner.getLastUpdated();
+			LocalDate yesterday = today.minusDays(1);
+
+			if (!lastUpdated.isEqual(yesterday)) {
+				// we already calculated that or its not relevant
+				// we only want ledger data from yesterday
+				continue;
+			}
+
+			Character character = lookupCharacter(touchedChars, miner.getCharacterId());
+
+			Map<Integer, MoonOre> minedMoonOre = character.getMinedMoonOre();
+			Integer minedOreTypeId = miner.getTypeId();
+
+			prepareMoonOre(minedMoonOre, minedOreTypeId, refinedMoonOres);
+
+			long minedAmount = minedMoonOre.get(minedOreTypeId).getMinedAmount();// total mined for this type
+			minedMoonOre.get(minedOreTypeId).setMinedAmount(minedAmount + miner.getQuantity());
+			touchedChars.put(character.getId(), character);
+		}
 	}
 
 	private Character lookupCharacter(Map<Integer, Character> touchedChars, Integer id) {
@@ -157,7 +175,7 @@ public class CorpMiningFetcher {
 		refinedMoonOres.forEach(ore -> {
 			refinedMoonOreMap.put(ore.name, ore.price);
 		});
-
+		List<Character> processedChars = new ArrayList<>();
 		for (Map.Entry<Integer, Character> touchedCharacter : touchedChars.entrySet()) {
 			float currentDept = 0;
 			Integer characterId = touchedCharacter.getKey();
@@ -169,9 +187,9 @@ public class CorpMiningFetcher {
 			}
 			character.getDept().setToPay((long) (character.getDept().getToPay() + currentDept));
 			character.getDept().setCharacterId(characterId);
-
-			characterManagement.saveChar(character);
+			processedChars.add(character);
 		}
+		characterManagement.saveAll(processedChars);
 	}
 
 	private float calculatePrice(float refinementMultiplier, float tax, Map<String, Float> refinedMoonOreMap, float currentDept, MoonOre ore) {
@@ -180,7 +198,7 @@ public class CorpMiningFetcher {
 		for (Pair<String, Integer> pair : pairs) {
 			float price = refinedMoonOreMap.get(pair.getLeft());
 			float finalPrice = (float) (price * pair.getRight() * refinementMultiplier * ore.getMultiplier() * tax);
-			currentDept += finalPrice * ((int) ore.getMinedAmount() / 100) ;
+			currentDept += finalPrice * ((int) ore.getMinedAmount() / 100);
 		}
 		return currentDept;
 	}
@@ -200,9 +218,4 @@ public class CorpMiningFetcher {
 			}
 		}
 	}
-
-	public Date convertToDateViaInstant(LocalDate dateToConvert) {
-		return Date.from(dateToConvert.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
-	}
-
 }
