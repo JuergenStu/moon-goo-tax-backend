@@ -5,6 +5,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +29,8 @@ import valkyrie.moon.goo.tax.workers.DebtWorker;
 
 @Component
 public class Auth {
+
+	private static final Logger LOG = LoggerFactory.getLogger(Auth.class);
 
 	private static final String SSO_CLIENT_ID = "SSO_CLIENT_ID";
 

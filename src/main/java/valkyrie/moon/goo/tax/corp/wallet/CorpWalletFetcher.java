@@ -48,7 +48,7 @@ public class CorpWalletFetcher {
 			List<CorporationWalletJournalResponse> corporationsCorporationIdWalletsDivisionJournal = walletApi.getCorporationsCorporationIdWalletsDivisionJournal(corporationId, persistedConfigPropertiesRepository.findAll().get(0).getDivision(), EsiApi.DATASOURCE, null, null, null);
 
 			corporationsCorporationIdWalletsDivisionJournal.forEach(entry -> {
-				String reason = entry.getReason();
+				String reason = entry.getReason().trim();
 				if (reason.isEmpty()) {
 					return;
 				}
