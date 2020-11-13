@@ -35,7 +35,8 @@ public class Auth {
 	private static final String SSO_CLIENT_ID = "SSO_CLIENT_ID";
 
 	private OAuth auth;
-	private String args = "8ab79b8c0df04a419f14703b520244e8";
+	private final String args = "8ab79b8c0df04a419f14703b520244e8";
+	private final String sso_callback_url = "SSO_CALLBACK_URL";
 
 	@Autowired
 	private ClientCredentialsRepository repository;
@@ -47,6 +48,7 @@ public class Auth {
 	private EsiApi esiApi;
 
 	private ApiClient client;
+
 
 	public void authenticate(String state, String code) throws ApiException {
 		auth.finishFlow(code, state);
@@ -82,31 +84,34 @@ public class Auth {
 
 		final String state = "someSecret"; // doesn't matter for now
 
-		if (!args.isEmpty()) {
-			client = new ApiClientBuilder().clientID(args).build();
+		if (System.getenv(SSO_CLIENT_ID) != null) {
+			client = new ApiClientBuilder().clientID(System.getenv().get(SSO_CLIENT_ID)).build();
 		} else {
-			if (System.getenv().get(SSO_CLIENT_ID) != null) {
-				client = new ApiClientBuilder().clientID(System.getenv().get(SSO_CLIENT_ID)).build();
+			if (!args.isEmpty()) {
+				client = new ApiClientBuilder().clientID(args).build();
 			} else {
 				System.err.println("ClientId missing");
 				System.exit(-1);
 				client = new ApiClientBuilder().build();
 			}
 		}
+
+		LOG.info("SSO_CLIENT_ID: {}", System.getenv(SSO_CLIENT_ID));
+
 		auth = (OAuth) client.getAuthentication("evesso");
 
 		//		esi-wallet.read_corporation_wallets.v1
 		//		esi-industry.read_corporation_mining.v1
 
-		final Set<String> scopes = ImmutableSet.of(
-				SsoScopes.ESI_WALLET_READ_CORPORATION_WALLETS_V1,
-				SsoScopes.ESI_INDUSTRY_READ_CORPORATION_MINING_V1);
+		final Set<String> scopes = ImmutableSet
+				.of(SsoScopes.ESI_WALLET_READ_CORPORATION_WALLETS_V1, SsoScopes.ESI_INDUSTRY_READ_CORPORATION_MINING_V1);
 		String redirectUri;
-		if (System.getenv().get("SSO_CALLBACK_URL") != null) {
+		if (System.getenv(sso_callback_url) != null) {
 			redirectUri = System.getenv().get("SSO_CALLBACK_URL");
 		} else {
 			redirectUri = "http://localhost:8080/callback";
 		}
+		LOG.info("RedirectUrl = {}", redirectUri);
 		final String authorizationUri = auth.getAuthorizationUri(redirectUri, scopes, state);
 		System.out.println("Authorization URL: " + authorizationUri);
 		return authorizationUri;
