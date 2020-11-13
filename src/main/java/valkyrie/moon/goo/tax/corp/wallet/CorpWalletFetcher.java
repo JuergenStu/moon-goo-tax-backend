@@ -44,42 +44,46 @@ public class CorpWalletFetcher {
 
 		walletApi.setApiClient(api.getApi());
 		try {
-
 			List<CorporationWalletJournalResponse> corporationsCorporationIdWalletsDivisionJournal = walletApi.getCorporationsCorporationIdWalletsDivisionJournal(corporationId, persistedConfigPropertiesRepository.findAll().get(0).getDivision(), EsiApi.DATASOURCE, null, null, null);
 
 			corporationsCorporationIdWalletsDivisionJournal.forEach(entry -> {
-				String reason = entry.getReason().trim();
-				if (reason.isEmpty()) {
-					return;
-				}
-
-				Character character = getCharacterFromDb(reason);
+				Character character = checkPreConditions(entry);
 				if (character == null) {
-					return;
-				}
-				OffsetDateTime date = entry.getDate();
-				OffsetDateTime lastUpdate = character.getDept().getLastUpdate().toInstant().atOffset(ZoneOffset.UTC);
-				if (lastUpdate.isAfter(date)) {
-					// no need to update!
 					return;
 				}
 
 				setDebt(entry, character);
-
 				characterManagement.saveChar(character);
-
 			});
-
 		} catch (ApiException e) {
 			LOG.warn("WalletAPI not reachable or working...", e);
 		}
 	}
 
-	private Character getCharacterFromDb(String reason) {
-		// valid character
-		Character character = characterManagement.findByName(reason);
+	private Character checkPreConditions(CorporationWalletJournalResponse entry) {
+		Integer firstPartyId = entry.getFirstPartyId();
+
+		if (entry.getRefType() != CorporationWalletJournalResponse.RefTypeEnum.PLAYER_DONATION) {
+			return null;
+		}
+		Character character = getCharacterFromDb(firstPartyId);
 		if (character == null) {
-			LOG.warn("Did not find character {} in DB - maybe wrong reason", reason);
+			return null;
+		}
+		OffsetDateTime date = entry.getDate();
+		OffsetDateTime lastUpdate = character.getDept().getLastUpdate().toInstant().atOffset(ZoneOffset.UTC);
+		if (lastUpdate.isAfter(date)) {
+			// no need to update!
+			return null;
+		}
+		return character;
+	}
+
+	private Character getCharacterFromDb(Integer characterId) {
+		// valid character
+		Character character = characterManagement.findCharacter(characterId);
+		if (character == null) {
+			LOG.warn("Did not find character {} in DB - maybe wrong characterId", characterId);
 			return null;
 		}
 		return character;
