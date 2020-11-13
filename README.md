@@ -16,7 +16,7 @@ Make sure you have following environment variables set:
 * ~~make the workers run at 14 utc for the day before!~~
 * ~~trim remove whitespaces in search box~~
 * add a way of combining characters to only transfer one amount
-* add id for transaction - to easier find the errors
+* ~~add id for transaction - to easier find the errors~~ not needed anymore
 * ~~add corporation to char name in UI~~
 * ~~get char id from transaction~~
  
