@@ -12,15 +12,17 @@ public class CharacterView {
 	private Integer id;
 
 	private String name;
+	private String corpName;
 	private Long debt;
 	private Map<String, Integer> minedOre;
 
 	public CharacterView() {
 	}
 
-	public CharacterView(Integer id, String name, Long debt, Map<String, Integer> minedOre) {
+	public CharacterView(Integer id, String name, String corpName, Long debt, Map<String, Integer> minedOre) {
 		this.id = id;
 		this.name = name;
+		this.corpName = corpName;
 		this.debt = debt;
 		this.minedOre = minedOre;
 	}
@@ -57,8 +59,17 @@ public class CharacterView {
 		this.minedOre = minedOre;
 	}
 
+	public String getCorpName() {
+		return corpName;
+	}
+
+	public void setCorpName(String corpName) {
+		this.corpName = corpName;
+	}
+
 	@Override
 	public String toString() {
-		return "CharacterView{" + "id=" + id + ", name='" + name + '\'' + ", debt=" + debt + ", minedOre=" + minedOre + '}';
+		return "CharacterView{" + "id=" + id + ", name='" + name + '\'' + ", corpName='" + corpName + '\'' + ", debt=" + debt + ", minedOre="
+				+ minedOre + '}';
 	}
 }

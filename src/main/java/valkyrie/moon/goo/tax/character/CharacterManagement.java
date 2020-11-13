@@ -12,7 +12,9 @@ import org.springframework.stereotype.Component;
 
 import net.troja.eve.esi.ApiException;
 import net.troja.eve.esi.api.CharacterApi;
+import net.troja.eve.esi.api.CorporationApi;
 import net.troja.eve.esi.model.CharacterResponse;
+import net.troja.eve.esi.model.CorporationResponse;
 import valkyrie.moon.goo.tax.auth.EsiApi;
 import valkyrie.moon.goo.tax.character.debt.Debt;
 
@@ -20,6 +22,7 @@ import valkyrie.moon.goo.tax.character.debt.Debt;
 public class CharacterManagement {
 
 	private CharacterApi characterApi;
+	private CorporationApi corporationApi;
 
 	@Autowired
 	private EsiApi esiApi;
@@ -33,6 +36,7 @@ public class CharacterManagement {
 	@PostConstruct
 	public void init() {
 		characterApi = new CharacterApi(esiApi.getApi());
+		corporationApi = new CorporationApi(esiApi.getApi());
 	}
 
 	public Character findCharacter(Integer id) {
@@ -47,12 +51,12 @@ public class CharacterManagement {
 		// else fetch all information
 
 		try {
-			CharacterResponse characterResponse = characterApi
-					.getCharactersCharacterId(id, EsiApi.DATASOURCE, null);
-			Character character = new Character(id, characterResponse.getName(),
-					characterResponse.getCorporationId(), false,
-					new Debt(id, 0L, 0L, new Date(943916400000L)), new HashMap<>(),
-					new HashMap<>());
+			CharacterResponse characterResponse = characterApi.getCharactersCharacterId(id, EsiApi.DATASOURCE, null);
+			CorporationResponse corporationsCorporationId = corporationApi
+					.getCorporationsCorporationId(characterResponse.getCorporationId(), EsiApi.DATASOURCE, null);
+
+			Character character = new Character(id, characterResponse.getName(), characterResponse.getCorporationId(),
+					corporationsCorporationId.getName(), false, new Debt(id, 0L, 0L, new Date(943916400000L)), new HashMap<>(), new HashMap<>());
 
 			return character;
 		} catch (ApiException e) {

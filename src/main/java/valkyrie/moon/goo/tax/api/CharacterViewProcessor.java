@@ -45,6 +45,7 @@ public class CharacterViewProcessor {
 		prepareMinedOre(character, minedOre);
 		characterView.setMinedOre(minedOre);
 		characterView.setDebt(character.getDept().getToPay());
+		characterView.setCorpName(character.getCorpName());
 		characterViews.add(characterView);
 	}
 

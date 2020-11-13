@@ -17,6 +17,7 @@ public class Character {
 
 	public String name;
 	public Integer corpId;
+	public String corpName;
 
 	public boolean isLead;
 
@@ -30,10 +31,12 @@ public class Character {
 	public Character() {
 	}
 
-	public Character(Integer id, String name, Integer corpId, boolean isLead, Debt dept, Map<Long, Date> lastUpdateObserverMapping, Map<Integer, MoonOre> minedMoonOre) {
+	public Character(Integer id, String name, Integer corpId, String corpName, boolean isLead, Debt dept, Map<Long, Date> lastUpdateObserverMapping,
+			Map<Integer, MoonOre> minedMoonOre) {
 		this.id = id;
 		this.name = name;
 		this.corpId = corpId;
+		this.corpName = corpName;
 		this.isLead = isLead;
 		this.dept = dept;
 		this.lastUpdateObserverMapping = lastUpdateObserverMapping;
@@ -96,8 +99,17 @@ public class Character {
 		this.minedMoonOre = minedMoonOre;
 	}
 
+	public String getCorpName() {
+		return corpName;
+	}
+
+	public void setCorpName(String corpName) {
+		this.corpName = corpName;
+	}
+
 	@Override
 	public String toString() {
-		return "Character{" + "id=" + id + ", name='" + name + '\'' + ", corpId=" + corpId + ", isLead=" + isLead + ", dept=" + dept + ", lastUpdateObserverMapping=" + lastUpdateObserverMapping + ", minedMoonOre=" + minedMoonOre + '}';
+		return "Character{" + "id=" + id + ", name='" + name + '\'' + ", corpId=" + corpId + ", isLead=" + isLead + ", dept=" + dept
+				+ ", lastUpdateObserverMapping=" + lastUpdateObserverMapping + ", minedMoonOre=" + minedMoonOre + '}';
 	}
 }

@@ -35,7 +35,7 @@ public class Auth {
 	private static final String SSO_CLIENT_ID = "SSO_CLIENT_ID";
 
 	private OAuth auth;
-	private String args = "aef693bcc07d459689329e6a334c8a14";
+	private String args = "8ab79b8c0df04a419f14703b520244e8";
 
 	@Autowired
 	private ClientCredentialsRepository repository;
@@ -62,11 +62,9 @@ public class Auth {
 
 		CharacterApi api = new CharacterApi(client);
 
-		CharacterResponse character = api
-				.getCharactersCharacterId(characterID, EsiApi.DATASOURCE, null);
-		characterRepository
-				.save(new Character(characterID, character.getName(), character.getCorporationId(),
-						true, new Debt(characterID, 0L, 0L, new Date(943916400000L)), null, null));
+		CharacterResponse character = api.getCharactersCharacterId(characterID, EsiApi.DATASOURCE, null);
+		characterRepository.save(new Character(characterID, character.getName(), character.getCorporationId(), null, true,
+				new Debt(characterID, 0L, 0L, new Date(943916400000L)), null, null));
 
 		// now start processing...
 		startProcessing();

@@ -17,7 +17,7 @@ Make sure you have following environment variables set:
 * ~~trim remove whitespaces in search box~~
 * add a way of combining characters to only transfer one amount
 * add id for transaction - to easier find the errors
-* add corporation to char name in UI
+* ~~add corporation to char name in UI~~
 * ~~get char id from transaction~~
  
 Find 
