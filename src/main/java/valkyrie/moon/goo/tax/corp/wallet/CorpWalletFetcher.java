@@ -33,6 +33,8 @@ public class CorpWalletFetcher {
 	private PersistedConfigPropertiesRepository persistedConfigPropertiesRepository;
 	@Autowired
 	private CharacterViewProcessor characterViewProcessor;
+	@Autowired
+	private TransactionLogRepository transactionLogRepository;
 
 	private final WalletApi walletApi = new WalletApi();
 
@@ -63,10 +65,12 @@ public class CorpWalletFetcher {
 
 				setDebt(entry, character);
 				characterManagement.saveChar(character);
-				// also update character view
-				characterViewProcessor.prepareCharacterView();
-
+				// save transaction
+				transactionLogRepository
+						.save(new TransactionLog(character.getName(), character.getCorpName(), entry.getAmount(), entry.getDate().toLocalDate()));
 			});
+			// also update character view
+			characterViewProcessor.prepareCharacterView();
 		} catch (ApiException e) {
 			LOG.warn("WalletAPI not reachable or working...", e);
 		}

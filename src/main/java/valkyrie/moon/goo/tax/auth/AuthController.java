@@ -28,6 +28,7 @@ public class AuthController {
 		String html = "Please click this link: <a href=\"" + auth.getAuthUrl() + "\">Eve Auth</a>";
 		html += "<br> Click here for statistics: <a href=\"/statistics/\">klick me </a>";
 		html += "<br> Click here for configuration: <a href=\"/configuration/\">klick me </a>";
+		html += "<br> Click here for the transaction log: <a href=\"/statistics/transactionLog/\">klick me </a>";
 		return html;
 	}
 

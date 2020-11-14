@@ -35,7 +35,7 @@ public class Auth {
 	private static final String SSO_CLIENT_ID = "SSO_CLIENT_ID";
 
 	private OAuth auth;
-	private final String args = "8ab79b8c0df04a419f14703b520244e8";
+	private final String args = "";
 	private final String sso_callback_url = "SSO_CALLBACK_URL";
 
 	@Autowired
@@ -109,7 +109,7 @@ public class Auth {
 		if (System.getenv(sso_callback_url) != null) {
 			redirectUri = System.getenv().get("SSO_CALLBACK_URL");
 		} else {
-			redirectUri = "http://localhost:8080/callback";
+			redirectUri = "http://localhost:8090/callback";
 		}
 		LOG.info("RedirectUrl = {}", redirectUri);
 		final String authorizationUri = auth.getAuthorizationUri(redirectUri, scopes, state);
