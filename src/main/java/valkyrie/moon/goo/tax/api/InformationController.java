@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import valkyrie.moon.goo.tax.character.Character;
+import valkyrie.moon.goo.tax.marketData.dtos.RefinedMoonOre;
+import valkyrie.moon.goo.tax.marketData.refinedMoonOre.RefinedMoonOreRepository;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -17,6 +19,12 @@ public class InformationController {
 
 	@Autowired
 	private CharacterViewRepository characterViewRepository;
+
+	@Autowired
+	private RefinedMoonOreRepository refinedMoonOreRepository;
+
+	@Autowired
+	private CharacterViewProcessor characterViewProcessor;
 
 	@Autowired
 	private ApiHelper apiHelper;
@@ -29,6 +37,16 @@ public class InformationController {
 	@RequestMapping("/characters/{id}")
 	public Character getCharacterById(@PathVariable int id) {
 		return apiHelper.findById(id);
+	}
+
+	@RequestMapping("/ore")
+	public List<RefinedMoonOre> getOrePrices() {
+		return refinedMoonOreRepository.findAll();
+	}
+
+	@RequestMapping("/prepareView")
+	public void prepareView() {
+		characterViewProcessor.prepareCharacterView();
 	}
 
 }

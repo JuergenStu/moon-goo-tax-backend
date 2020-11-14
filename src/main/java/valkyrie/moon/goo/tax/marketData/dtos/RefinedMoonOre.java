@@ -3,13 +3,15 @@ package valkyrie.moon.goo.tax.marketData.dtos;
 import org.springframework.data.annotation.Id;
 
 public class RefinedMoonOre {
-	@Id public String id;
+	@Id
+	public String id;
 
 	public String name;
 	public float price;
 	public String date;
 
-	public RefinedMoonOre() {	}
+	public RefinedMoonOre() {
+	}
 
 	public RefinedMoonOre(String id, String name, float price, String date) {
 		this.id = id;

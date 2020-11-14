@@ -22,6 +22,8 @@ Make sure you have following environment variables set:
 * add a way of combining characters to only transfer one amount
 * show delta of ore mined in detail screen
 * show current refined ore prices
+
+* how to pass parameters into angular config
  
 Find 
 

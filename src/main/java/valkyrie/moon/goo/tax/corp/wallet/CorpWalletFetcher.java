@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import net.troja.eve.esi.ApiException;
 import net.troja.eve.esi.api.WalletApi;
 import net.troja.eve.esi.model.CorporationWalletJournalResponse;
+import valkyrie.moon.goo.tax.api.CharacterViewProcessor;
 import valkyrie.moon.goo.tax.auth.EsiApi;
 import valkyrie.moon.goo.tax.character.Character;
 import valkyrie.moon.goo.tax.character.CharacterManagement;
@@ -30,6 +31,8 @@ public class CorpWalletFetcher {
 	private CharacterManagement characterManagement;
 	@Autowired
 	private PersistedConfigPropertiesRepository persistedConfigPropertiesRepository;
+	@Autowired
+	private CharacterViewProcessor characterViewProcessor;
 
 	private final WalletApi walletApi = new WalletApi();
 
@@ -44,16 +47,25 @@ public class CorpWalletFetcher {
 
 		walletApi.setApiClient(api.getApi());
 		try {
-			List<CorporationWalletJournalResponse> corporationsCorporationIdWalletsDivisionJournal = walletApi.getCorporationsCorporationIdWalletsDivisionJournal(corporationId, persistedConfigPropertiesRepository.findAll().get(0).getDivision(), EsiApi.DATASOURCE, null, null, null);
+			List<CorporationWalletJournalResponse> corporationsCorporationIdWalletsDivisionJournal = walletApi
+					.getCorporationsCorporationIdWalletsDivisionJournal(corporationId,
+							persistedConfigPropertiesRepository.findAll().get(0).getDivision(), EsiApi.DATASOURCE, null, null, null);
+
+			LOG.info("Found {} wallet  for division {}...", corporationsCorporationIdWalletsDivisionJournal.size(),
+					persistedConfigPropertiesRepository.findAll().get(0).getDivision());
 
 			corporationsCorporationIdWalletsDivisionJournal.forEach(entry -> {
 				Character character = checkPreConditions(entry);
 				if (character == null) {
 					return;
 				}
+				LOG.info("Calculating debt for {}", character.getName());
 
 				setDebt(entry, character);
 				characterManagement.saveChar(character);
+				// also update character view
+				characterViewProcessor.prepareCharacterView();
+
 			});
 		} catch (ApiException e) {
 			LOG.warn("WalletAPI not reachable or working...", e);
@@ -66,14 +78,19 @@ public class CorpWalletFetcher {
 		if (entry.getRefType() != CorporationWalletJournalResponse.RefTypeEnum.PLAYER_DONATION) {
 			return null;
 		}
+		LOG.debug("Found player donation: {}", entry);
 		Character character = getCharacterFromDb(firstPartyId);
 		if (character == null) {
+			LOG.warn("Did not find char in DB: {}", entry);
 			return null;
 		}
-		OffsetDateTime date = entry.getDate();
+		LOG.debug("Character: {}", character);
+
+		OffsetDateTime donationDate = entry.getDate();
 		OffsetDateTime lastUpdate = character.getDept().getLastUpdate().toInstant().atOffset(ZoneOffset.UTC);
-		if (lastUpdate.isAfter(date)) {
+		if (lastUpdate.isAfter(donationDate)) {
 			// no need to update!
+			LOG.info("last Update for character {}: {}, now: {}", character.getName(), lastUpdate, donationDate);
 			return null;
 		}
 		return character;
