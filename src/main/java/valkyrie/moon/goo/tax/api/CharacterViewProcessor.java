@@ -1,9 +1,7 @@
 package valkyrie.moon.goo.tax.api;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,20 +39,19 @@ public class CharacterViewProcessor {
 		CharacterView characterView = new CharacterView();
 		characterView.setId(character.getId());
 		characterView.setName(character.getName());
-		Map<String, Integer> minedOre = new HashMap<>();
-		prepareMinedOre(character, minedOre);
-		characterView.setMinedOre(minedOre);
+		characterView.setMinedOre(prepareMinedOre(character));
 		characterView.setDebt(character.getDept().getToPay());
 		characterView.setCorpName(character.getCorpName());
 		characterViews.add(characterView);
 	}
 
-	private void prepareMinedOre(Character character, Map<String, Integer> minedOre) {
+	private List<MinedOre> prepareMinedOre(Character character) {
+		List<MinedOre> minedOre = new ArrayList<>();
 		if (character.getMinedMoonOre() != null) {
 			for (MoonOre entry : character.getMinedMoonOre().values()) {
-				minedOre.put(entry.getVisualName(), (int) entry.getMinedAmount());
+				minedOre.add(new MinedOre(entry.getVisualName(), entry.getMinedAmount(), entry.getDelta()));
 			}
 		}
+		return minedOre;
 	}
-
 }

@@ -149,6 +149,7 @@ public class CorpMiningFetcher {
 
 			long minedAmount = minedMoonOre.get(minedOreTypeId).getMinedAmount();// total mined for this type
 			minedMoonOre.get(minedOreTypeId).setMinedAmount(minedAmount + miner.getQuantity());
+			minedMoonOre.get(minedOreTypeId).setDelta(Math.toIntExact(miner.getQuantity()));
 			touchedChars.put(character.getId(), character);
 		}
 	}
