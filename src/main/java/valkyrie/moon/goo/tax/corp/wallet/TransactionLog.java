@@ -25,7 +25,7 @@ public class TransactionLog {
 		this.transactionDate = transactionDate;
 	}
 
-	public TransactionLog(int id, String characterName, String corp, Double amount, LocalDate transactionDate) {
+	public TransactionLog(Integer id, String characterName, String corp, Double amount, LocalDate transactionDate) {
 		this.id = id;
 		this.characterName = characterName;
 		this.corp = corp;

@@ -55,10 +55,8 @@ public class CharacterManagement {
 			CorporationResponse corporationsCorporationId = corporationApi
 					.getCorporationsCorporationId(characterResponse.getCorporationId(), EsiApi.DATASOURCE, null);
 
-			Character character = new Character(id, characterResponse.getName(), characterResponse.getCorporationId(),
+			return new Character(id, characterResponse.getName(), characterResponse.getCorporationId(),
 					corporationsCorporationId.getName(), false, new Debt(id, 0L, 0L, new Date(943916400000L)), new HashMap<>(), new HashMap<>());
-
-			return character;
 		} catch (ApiException e) {
 			e.printStackTrace();
 		}
