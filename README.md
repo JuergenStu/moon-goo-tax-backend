@@ -7,7 +7,6 @@ Make sure you have following environment variables set:
 * ingame rights: Accountant
 
 #TODOS:
-* All chars need to auth first!
 * ~~rename collections in mongo~~
 * ~~make tax and refining configurable~~
 * ~~make worker call order~~
@@ -18,10 +17,13 @@ Make sure you have following environment variables set:
 * ~~add id for transaction - to easier find the errors~~ not needed anymore
 * ~~add corporation to char name in UI~~
 * ~~get char id from transaction~~
-* keep track of all transactions per month
+* ~~keep track of all transactions per month~~
 * add a way of combining characters to only transfer one amount
-* show delta of ore mined in detail screen
-* show current refined ore prices
+* ~~show delta of ore mined in detail screen~~
+* ~~show current refined ore prices~~
+* chek mining multiple times a day to prevent API outage
+* ~~also let char specify a reason when transfering money~~
+* ~~reset delta daily~~
 
 * how to pass parameters into angular config
  

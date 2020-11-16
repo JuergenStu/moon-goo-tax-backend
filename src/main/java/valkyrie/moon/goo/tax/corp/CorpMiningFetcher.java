@@ -77,9 +77,10 @@ public class CorpMiningFetcher {
 			calculateAll(today, leadChar, refinedMoonOres);
 		} catch (ApiException apiException) {
 			LOG.warn("Had error while processing mining ledger.", apiException);
+			return; // might brick the data :(
 		}
 		updateTimeTrackerRepository
-				.save(new UpdateTimeTracker(1, updateTimeTracker.getFirstUpdate(), DateUtils.convertToLocalDateViaInstant(new Date())));
+				.save(new UpdateTimeTracker(1, updateTimeTracker.getFirstUpdate(), DateUtils.convertToLocalDateViaInstant(new Date()), true));
 	}
 
 	private void calculateAll(LocalDate today, Character leadChar, List<RefinedMoonOre> refinedMoonOres) throws ApiException {
@@ -100,6 +101,10 @@ public class CorpMiningFetcher {
 			return null;
 		}
 		updateTimeTracker = all.get();
+		if (updateTimeTracker.getUpdatedToday()) {
+			LOG.info("Already updated today... skipping run...");
+			return null;
+		}
 		LocalDate today = DateUtils.convertToLocalDateViaInstant(new Date());
 
 		LocalDate lastUpdate = updateTimeTracker.getLastUpdate();
@@ -141,6 +146,8 @@ public class CorpMiningFetcher {
 			}
 
 			Character character = lookupCharacter(touchedChars, miner.getCharacterId());
+			// reset delta
+			resetDelta(character);
 
 			Map<Integer, MoonOre> minedMoonOre = character.getMinedMoonOre();
 			Integer minedOreTypeId = miner.getTypeId();
@@ -152,6 +159,12 @@ public class CorpMiningFetcher {
 			minedMoonOre.get(minedOreTypeId).setDelta(Math.toIntExact(miner.getQuantity()));
 			touchedChars.put(character.getId(), character);
 		}
+	}
+
+	private void resetDelta(Character character) {
+		character.getMinedMoonOre().forEach((id, ore) -> {
+			ore.setDelta(0);
+		});
 	}
 
 	private Character lookupCharacter(Map<Integer, Character> touchedChars, Integer id) {

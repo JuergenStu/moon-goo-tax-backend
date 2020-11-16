@@ -82,8 +82,9 @@ public class CorpWalletFetcher {
 		if (entry.getRefType() != CorporationWalletJournalResponse.RefTypeEnum.PLAYER_DONATION) {
 			return null;
 		}
+		String reason = entry.getReason();
 		LOG.debug("Found player donation: {}", entry);
-		Character character = getCharacterFromDb(firstPartyId);
+		Character character = getCharacterFromDb(firstPartyId, reason);
 		if (character == null) {
 			LOG.warn("Did not find char in DB: {}", entry);
 			return null;
@@ -100,12 +101,19 @@ public class CorpWalletFetcher {
 		return character;
 	}
 
-	private Character getCharacterFromDb(Integer characterId) {
+	private Character getCharacterFromDb(Integer characterId, String reason) {
 		// valid character
-		Character character = characterManagement.findCharacter(characterId);
+		Character character = null;
+		if (reason != null && !reason.isEmpty()) {
+			character = characterManagement.findByName(reason);
+		}
+
 		if (character == null) {
-			LOG.warn("Did not find character {} in DB - maybe wrong characterId", characterId);
-			return null;
+			character = characterManagement.findCharacter(characterId);
+			if (character == null) {
+				LOG.warn("Did not find character {} in DB - maybe wrong characterId", characterId);
+				return null;
+			}
 		}
 		return character;
 	}
