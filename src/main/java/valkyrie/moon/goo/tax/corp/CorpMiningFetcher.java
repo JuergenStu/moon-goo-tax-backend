@@ -77,9 +77,10 @@ public class CorpMiningFetcher {
 			calculateAll(today, leadChar, refinedMoonOres);
 		} catch (ApiException apiException) {
 			LOG.warn("Had error while processing mining ledger.", apiException);
+			return; // might brick the data :(
 		}
 		updateTimeTrackerRepository
-				.save(new UpdateTimeTracker(1, updateTimeTracker.getFirstUpdate(), DateUtils.convertToLocalDateViaInstant(new Date())));
+				.save(new UpdateTimeTracker(1, updateTimeTracker.getFirstUpdate(), DateUtils.convertToLocalDateViaInstant(new Date()), true));
 	}
 
 	private void calculateAll(LocalDate today, Character leadChar, List<RefinedMoonOre> refinedMoonOres) throws ApiException {
@@ -100,6 +101,10 @@ public class CorpMiningFetcher {
 			return null;
 		}
 		updateTimeTracker = all.get();
+		if (updateTimeTracker.getUpdatedToday()) {
+			LOG.info("Already updated today... skipping run...");
+			return null;
+		}
 		LocalDate today = DateUtils.convertToLocalDateViaInstant(new Date());
 
 		LocalDate lastUpdate = updateTimeTracker.getLastUpdate();

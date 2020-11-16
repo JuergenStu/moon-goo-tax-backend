@@ -103,7 +103,11 @@ public class CorpWalletFetcher {
 
 	private Character getCharacterFromDb(Integer characterId, String reason) {
 		// valid character
-		Character character = characterManagement.findByName(reason);
+		Character character = null;
+		if (reason != null && !reason.isEmpty()) {
+			character = characterManagement.findByName(reason);
+		}
+
 		if (character == null) {
 			character = characterManagement.findCharacter(characterId);
 			if (character == null) {
@@ -111,7 +115,6 @@ public class CorpWalletFetcher {
 				return null;
 			}
 		}
-
 		return character;
 	}
 
