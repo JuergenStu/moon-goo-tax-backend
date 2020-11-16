@@ -61,6 +61,12 @@ public class CorpMiningFetcher {
 	private UpdateTimeTracker updateTimeTracker;
 
 	public void fetchMiningStatistics() {
+
+		// reset delta for all characters
+		LOG.info("Resetting delta for all characters...");
+		List<Character> allCharacters = characterManagement.getAllCharacters();
+		allCharacters.forEach(this::resetDelta);
+
 		LocalDate today = checkDateRequirements();
 		if (today == null)
 			return;
@@ -146,8 +152,6 @@ public class CorpMiningFetcher {
 			}
 
 			Character character = lookupCharacter(touchedChars, miner.getCharacterId());
-			// reset delta
-			resetDelta(character);
 
 			Map<Integer, MoonOre> minedMoonOre = character.getMinedMoonOre();
 			Integer minedOreTypeId = miner.getTypeId();

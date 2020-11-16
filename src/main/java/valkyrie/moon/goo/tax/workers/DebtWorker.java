@@ -23,7 +23,7 @@ public class DebtWorker {
 	private UpdateTimeTrackerRepository updateTimeTrackerRepository;
 
 	// cron job: everyday at 14:00
-	@Scheduled(fixedRate = 3_600_000, initialDelay = 10_000)
+	@Scheduled(fixedRate = 3_600_000, initialDelay = 3_600_000)
 	public void fetchMoonLedgerData() {
 		LOG.info("Fetching mining statistics...");
 		miningFetcher.fetchMiningStatistics();

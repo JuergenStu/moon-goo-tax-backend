@@ -82,4 +82,8 @@ public class CharacterManagement {
 	public void saveAll(List<Character> characters) {
 		characterRepository.saveAll(characters);
 	}
+
+	public List<Character> getAllCharacters() {
+		return characterRepository.findAll();
+	}
 }
