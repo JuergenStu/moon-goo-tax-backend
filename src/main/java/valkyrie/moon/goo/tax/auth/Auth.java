@@ -76,7 +76,7 @@ public class Auth {
 		esiApi.prepareApi();
 		ExecutorService executor = Executors.newFixedThreadPool(1);
 		executor.submit(() -> {
-			debtWorker.fetchMoonLedgerData();
+			debtWorker.forceFetchMoonOreData();
 		});
 	}
 

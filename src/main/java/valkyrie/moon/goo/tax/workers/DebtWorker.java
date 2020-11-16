@@ -38,4 +38,8 @@ public class DebtWorker {
 			updateTimeTracker.get().setUpdatedToday(false);
 		}
 	}
+
+	public void forceFetchMoonOreData() {
+		miningFetcher.fetchMiningStatistics();
+	}
 }
