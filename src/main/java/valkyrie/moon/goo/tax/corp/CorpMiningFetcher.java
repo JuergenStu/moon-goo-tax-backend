@@ -141,6 +141,8 @@ public class CorpMiningFetcher {
 			}
 
 			Character character = lookupCharacter(touchedChars, miner.getCharacterId());
+			// reset delta
+			resetDelta(character);
 
 			Map<Integer, MoonOre> minedMoonOre = character.getMinedMoonOre();
 			Integer minedOreTypeId = miner.getTypeId();
@@ -152,6 +154,12 @@ public class CorpMiningFetcher {
 			minedMoonOre.get(minedOreTypeId).setDelta(Math.toIntExact(miner.getQuantity()));
 			touchedChars.put(character.getId(), character);
 		}
+	}
+
+	private void resetDelta(Character character) {
+		character.getMinedMoonOre().forEach((id, ore) -> {
+			ore.setDelta(0);
+		});
 	}
 
 	private Character lookupCharacter(Map<Integer, Character> touchedChars, Integer id) {
