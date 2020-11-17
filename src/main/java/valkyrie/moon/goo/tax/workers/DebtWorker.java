@@ -24,14 +24,14 @@ public class DebtWorker {
 
 	// cron job: everyday, every 4h
 	//	@Scheduled(fixedRate = 3_600_000, initialDelay = 3_600_000)
-	@Scheduled(cron = "0 0 0/4 * * *")
+	@Scheduled(cron = "0 30 0/4 * * *")
 	public void fetchMoonLedgerData() {
 		LOG.info("Fetching mining statistics...");
 		miningFetcher.fetchMiningStatistics();
 	}
 
 	// cron job: everyday at 00:30 UTC
-	@Scheduled(cron = "0 30 0 * * *")
+	@Scheduled(cron = "0 15 0 * * *")
 	public void resetUpdate() {
 		persistShouldUpdate(false);
 	}
