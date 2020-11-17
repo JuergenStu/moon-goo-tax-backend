@@ -22,15 +22,16 @@ public class DebtWorker {
 	@Autowired
 	private UpdateTimeTrackerRepository updateTimeTrackerRepository;
 
-	// cron job: everyday at 14:00
-	@Scheduled(fixedRate = 3_600_000, initialDelay = 3_600_000)
+	// cron job: everyday, every 4h
+	//	@Scheduled(fixedRate = 3_600_000, initialDelay = 3_600_000)
+	@Scheduled(cron = "0 0 0/4 * * *")
 	public void fetchMoonLedgerData() {
 		LOG.info("Fetching mining statistics...");
 		miningFetcher.fetchMiningStatistics();
 	}
 
-	// cron job: everyday at 06:00
-	@Scheduled(cron = "0 0 6 * * *")
+	// cron job: everyday at 01:00 UTC
+	@Scheduled(cron = "0 0 1 * * *")
 	public void resetUpdate() {
 		LOG.info("Resetting todays update to false");
 		Optional<UpdateTimeTracker> updateTimeTracker = updateTimeTrackerRepository.findById(1);
