@@ -30,15 +30,24 @@ public class DebtWorker {
 		miningFetcher.fetchMiningStatistics();
 	}
 
-	// cron job: everyday at 01:00 UTC
-	@Scheduled(cron = "0 0 1 * * *")
+	// cron job: everyday at 00:30 UTC
+	@Scheduled(cron = "0 30 0 * * *")
 	public void resetUpdate() {
-		LOG.info("Resetting todays update to false");
+		persistShouldUpdate(false);
+	}
+
+	public void persistShouldUpdate(boolean shouldUpdate) {
+		LOG.info("Resetting should update to {}", shouldUpdate);
 		Optional<UpdateTimeTracker> updateTimeTrackerOptional = updateTimeTrackerRepository.findById(1);
 		UpdateTimeTracker updateTimeTracker;
 		if (updateTimeTrackerOptional.isPresent()) {
 			updateTimeTracker = updateTimeTrackerOptional.get();
-			updateTimeTracker.setUpdatedToday(false);
+			if (shouldUpdate) {
+				updateTimeTracker.setUpdatedToday(false);
+			} else {
+				// don't update
+				updateTimeTracker.setUpdatedToday(true);
+			}
 			updateTimeTrackerRepository.save(updateTimeTracker);
 		} else {
 			LOG.error("Could not reset update! No updatetime stored in db...");

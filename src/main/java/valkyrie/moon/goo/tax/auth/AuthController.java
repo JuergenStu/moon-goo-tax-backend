@@ -61,4 +61,9 @@ public class AuthController {
 		debtWorker.resetUpdate();
 	}
 
+	@RequestMapping("/preventUpdate")
+	public void preventUpdate() {
+		debtWorker.persistShouldUpdate(true);
+	}
+
 }
