@@ -56,4 +56,9 @@ public class AuthController {
 		debtWorker.fetchMoonLedgerData();
 	}
 
+	@RequestMapping("/resetUpdate")
+	public void resetUpdate() {
+		debtWorker.resetUpdate();
+	}
+
 }

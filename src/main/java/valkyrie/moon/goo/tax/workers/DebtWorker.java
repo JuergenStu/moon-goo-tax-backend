@@ -34,9 +34,14 @@ public class DebtWorker {
 	@Scheduled(cron = "0 0 1 * * *")
 	public void resetUpdate() {
 		LOG.info("Resetting todays update to false");
-		Optional<UpdateTimeTracker> updateTimeTracker = updateTimeTrackerRepository.findById(1);
-		if (updateTimeTracker.isPresent()) {
-			updateTimeTracker.get().setUpdatedToday(false);
+		Optional<UpdateTimeTracker> updateTimeTrackerOptional = updateTimeTrackerRepository.findById(1);
+		UpdateTimeTracker updateTimeTracker;
+		if (updateTimeTrackerOptional.isPresent()) {
+			updateTimeTracker = updateTimeTrackerOptional.get();
+			updateTimeTracker.setUpdatedToday(false);
+			updateTimeTrackerRepository.save(updateTimeTracker);
+		} else {
+			LOG.error("Could not reset update! No updatetime stored in db...");
 		}
 	}
 
