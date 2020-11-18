@@ -33,11 +33,11 @@ public class DebtWorker {
 	// cron job: everyday at 00:30 UTC
 	@Scheduled(cron = "0 15 0 * * *")
 	public void resetUpdate() {
-		persistShouldUpdate(false);
+		persistShouldUpdate(true);
 	}
 
 	public void persistShouldUpdate(boolean shouldUpdate) {
-		LOG.info("Resetting should update to {}", shouldUpdate);
+		LOG.info("Resetting isUpdatedToday to {}", shouldUpdate);
 		Optional<UpdateTimeTracker> updateTimeTrackerOptional = updateTimeTrackerRepository.findById(1);
 		UpdateTimeTracker updateTimeTracker;
 		if (updateTimeTrackerOptional.isPresent()) {
