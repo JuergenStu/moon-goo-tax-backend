@@ -34,10 +34,11 @@ public class DebtWorker {
 	@Scheduled(cron = "0 15 0 * * *")
 	public void resetUpdate() {
 		persistShouldUpdate(true);
+		miningFetcher.resetDelta();
 	}
 
 	public void persistShouldUpdate(boolean shouldUpdate) {
-		LOG.info("Resetting isUpdatedToday to {}", shouldUpdate);
+		LOG.info("Resetting isUpdatedToday to {}", !shouldUpdate);
 		Optional<UpdateTimeTracker> updateTimeTrackerOptional = updateTimeTrackerRepository.findById(1);
 		UpdateTimeTracker updateTimeTracker;
 		if (updateTimeTrackerOptional.isPresent()) {

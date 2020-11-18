@@ -62,11 +62,6 @@ public class CorpMiningFetcher {
 
 	public void fetchMiningStatistics() {
 
-		// reset delta for all characters
-		LOG.info("Resetting delta for all characters...");
-		List<Character> allCharacters = characterManagement.getAllCharacters();
-		allCharacters.forEach(this::resetDelta);
-
 		LocalDate today = checkDateRequirements();
 		if (today == null)
 			return;
@@ -87,6 +82,13 @@ public class CorpMiningFetcher {
 		}
 		updateTimeTrackerRepository
 				.save(new UpdateTimeTracker(1, updateTimeTracker.getFirstUpdate(), DateUtils.convertToLocalDateViaInstant(new Date()), true));
+	}
+
+	public void resetDelta() {
+		// reset delta for all characters
+		LOG.info("Resetting delta for all characters...");
+		List<Character> allCharacters = characterManagement.getAllCharacters();
+		allCharacters.forEach(this::resetDelta);
 	}
 
 	private void calculateAll(LocalDate today, Character leadChar, List<RefinedMoonOre> refinedMoonOres) throws ApiException {
@@ -157,12 +159,18 @@ public class CorpMiningFetcher {
 			Integer minedOreTypeId = miner.getTypeId();
 
 			prepareMoonOre(minedMoonOre, minedOreTypeId, refinedMoonOres);
-
-			long minedAmount = minedMoonOre.get(minedOreTypeId).getMinedAmount();// total mined for this type
-			minedMoonOre.get(minedOreTypeId).setMinedAmount(minedAmount + miner.getQuantity());
-			minedMoonOre.get(minedOreTypeId).setDelta(Math.toIntExact(miner.getQuantity()));
-			touchedChars.put(character.getId(), character);
+			setDetails(touchedChars, miner, character, minedMoonOre, minedOreTypeId);
 		}
+	}
+
+	private void setDetails(Map<Integer, Character> touchedChars, CorporationMiningObserverResponse miner, Character character,
+			Map<Integer, MoonOre> minedMoonOre, Integer minedOreTypeId) {
+		long minedAmount = minedMoonOre.get(minedOreTypeId).getMinedAmount();// total mined for this type
+		minedMoonOre.get(minedOreTypeId).setMinedAmount(minedAmount + miner.getQuantity());
+		int currentDelta = minedMoonOre.get(minedOreTypeId).getDelta();
+		int additionalDelta = Math.toIntExact(miner.getQuantity());
+		minedMoonOre.get(minedOreTypeId).setDelta(currentDelta + additionalDelta);
+		touchedChars.put(character.getId(), character);
 	}
 
 	private void resetDelta(Character character) {
