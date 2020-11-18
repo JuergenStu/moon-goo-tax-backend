@@ -1,5 +1,7 @@
 package valkyrie.moon.goo.tax.marketData.dtos;
 
+import java.util.Date;
+
 import org.springframework.data.annotation.Id;
 
 public class RefinedMoonOre {
@@ -8,12 +10,12 @@ public class RefinedMoonOre {
 
 	public String name;
 	public float price;
-	public String date;
+	public Date date;
 
 	public RefinedMoonOre() {
 	}
 
-	public RefinedMoonOre(String id, String name, float price, String date) {
+	public RefinedMoonOre(String id, String name, float price, Date date) {
 		this.id = id;
 		this.name = name;
 		this.price = price;
@@ -44,11 +46,11 @@ public class RefinedMoonOre {
 		this.price = price;
 	}
 
-	public String getDate() {
+	public Date getDate() {
 		return date;
 	}
 
-	public void setDate(String date) {
+	public void setDate(Date date) {
 		this.date = date;
 	}
 

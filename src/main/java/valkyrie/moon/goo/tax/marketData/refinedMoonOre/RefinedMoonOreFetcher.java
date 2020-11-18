@@ -22,8 +22,8 @@ import com.google.gson.JsonObject;
 
 import valkyrie.moon.goo.tax.marketData.EsiFetcher;
 import valkyrie.moon.goo.tax.marketData.dtos.RefinedMoonOre;
-import valkyrie.moon.goo.tax.marketData.dtos.UniverseGroups;
 import valkyrie.moon.goo.tax.marketData.dtos.TypeName;
+import valkyrie.moon.goo.tax.marketData.dtos.UniverseGroups;
 
 @Component
 public class RefinedMoonOreFetcher extends EsiFetcher {
@@ -84,7 +84,7 @@ public class RefinedMoonOreFetcher extends EsiFetcher {
 					finalName = name.getName();
 				}
 			}
-			refinedMoonOres.add(new RefinedMoonOre(id.toString(), finalName, max, new Date().toString()));
+			refinedMoonOres.add(new RefinedMoonOre(id.toString(), finalName, max, new Date()));
 		}
 		return refinedMoonOres;
 	}

@@ -20,9 +20,13 @@ import net.troja.eve.esi.model.CorporationMiningObserverResponse;
 import net.troja.eve.esi.model.CorporationMiningObserversResponse;
 import valkyrie.moon.goo.tax.DateUtils;
 import valkyrie.moon.goo.tax.api.CharacterViewProcessor;
+import valkyrie.moon.goo.tax.api.MiningHistoryView;
+import valkyrie.moon.goo.tax.api.MiningHistoryViewRepository;
 import valkyrie.moon.goo.tax.auth.EsiApi;
 import valkyrie.moon.goo.tax.character.Character;
 import valkyrie.moon.goo.tax.character.CharacterManagement;
+import valkyrie.moon.goo.tax.character.MiningHistory;
+import valkyrie.moon.goo.tax.character.MiningHistoryRepository;
 import valkyrie.moon.goo.tax.config.PersistedConfigProperties;
 import valkyrie.moon.goo.tax.config.PersistedConfigPropertiesRepository;
 import valkyrie.moon.goo.tax.marketData.dtos.MoonOre;
@@ -52,6 +56,10 @@ public class CorpMiningFetcher {
 	private RefinedMoonOreRepository refinedMoonOreRepository;
 	@Autowired
 	private UpdateTimeTrackerRepository updateTimeTrackerRepository;
+	@Autowired
+	private MiningHistoryRepository miningHistoryRepository;
+	@Autowired
+	private MiningHistoryViewRepository miningHistoryViewRepository;
 	@Autowired
 	private CharacterViewProcessor characterViewProcessor;
 	@Autowired
@@ -100,6 +108,8 @@ public class CorpMiningFetcher {
 		statisticsCalculator.calculateStatistics();
 		// and prepare character views
 		characterViewProcessor.prepareCharacterView();
+		// and, of course, prepare mining history view
+
 	}
 
 	private LocalDate checkDateRequirements() {
@@ -109,18 +119,18 @@ public class CorpMiningFetcher {
 			return null;
 		}
 		updateTimeTracker = all.get();
-		if (updateTimeTracker.getUpdatedToday()) {
-			LOG.info("Already updated today... skipping run...");
-			return null;
-		}
+		//		if (updateTimeTracker.getUpdatedToday()) {
+		//			LOG.info("Already updated today... skipping run...");
+		//			return null;
+		//		}
 		LocalDate today = DateUtils.convertToLocalDateViaInstant(new Date());
 
-		LocalDate lastUpdate = updateTimeTracker.getLastUpdate();
-		if (!lastUpdate.isBefore(today)) {
-			// nothing to update yet!
-			LOG.info("last update: {} | current date: {} - nothing to do yet.", lastUpdate, today);
-			return null;
-		}
+		//		LocalDate lastUpdate = updateTimeTracker.getLastUpdate();
+		//		if (!lastUpdate.isBefore(today)) {
+		//			// nothing to update yet!
+		//			LOG.info("last update: {} | current date: {} - nothing to do yet.", lastUpdate, today);
+		//			return null;
+		//		}
 		return today;
 	}
 
@@ -160,6 +170,15 @@ public class CorpMiningFetcher {
 
 			prepareMoonOre(minedMoonOre, minedOreTypeId, refinedMoonOres);
 			setDetails(touchedChars, miner, character, minedMoonOre, minedOreTypeId);
+			// save to history:
+
+			Date lastUpdate = DateUtils.convertToDateViaInstant(miner.getLastUpdated());
+			MiningHistory miningHistory = new MiningHistory(character.getId(), miner.getQuantity(), miner.getTypeId(),
+					lastUpdate);
+
+			miningHistoryRepository.save(miningHistory);
+			miningHistoryViewRepository.save(new MiningHistoryView(character.getName(), minedMoonOre.get(miner.getTypeId()).getVisualName(),
+					Math.toIntExact(miner.getQuantity()), lastUpdate));
 		}
 	}
 

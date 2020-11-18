@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import valkyrie.moon.goo.tax.character.Character;
@@ -22,6 +23,9 @@ public class InformationController {
 
 	@Autowired
 	private RefinedMoonOreRepository refinedMoonOreRepository;
+
+	@Autowired
+	private MiningHistoryViewRepository miningHistoryViewRepository;
 
 	@Autowired
 	private CharacterViewProcessor characterViewProcessor;
@@ -49,4 +53,8 @@ public class InformationController {
 		characterViewProcessor.prepareCharacterView();
 	}
 
+	@RequestMapping("/getMiningHistory")
+	public List<MiningHistoryView> getMiningHistory(@RequestParam String name) {
+		return miningHistoryViewRepository.findAllByCharacterName(name);
+	}
 }
