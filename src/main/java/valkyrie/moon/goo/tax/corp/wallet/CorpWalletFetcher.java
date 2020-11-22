@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import net.troja.eve.esi.ApiException;
 import net.troja.eve.esi.api.WalletApi;
 import net.troja.eve.esi.model.CorporationWalletJournalResponse;
+import valkyrie.moon.goo.tax.DateUtils;
 import valkyrie.moon.goo.tax.api.CharacterViewProcessor;
 import valkyrie.moon.goo.tax.auth.EsiApi;
 import valkyrie.moon.goo.tax.character.Character;
@@ -67,7 +68,8 @@ public class CorpWalletFetcher {
 				characterManagement.saveChar(character);
 				// save transaction
 				transactionLogRepository
-						.save(new TransactionLog(character.getName(), character.getCorpName(), entry.getAmount(), entry.getDate().toLocalDate()));
+						.save(new TransactionLog(character.getName(), character.getCorpName(), entry.getAmount(),
+								DateUtils.convertToDateViaInstant(entry.getDate().toLocalDate())));
 			});
 			// also update character view
 			characterViewProcessor.prepareCharacterView();
@@ -93,11 +95,11 @@ public class CorpWalletFetcher {
 
 		OffsetDateTime donationDate = entry.getDate();
 		OffsetDateTime lastUpdate = character.getDept().getLastUpdate().toInstant().atOffset(ZoneOffset.UTC);
-		if (lastUpdate.isAfter(donationDate)) {
-			// no need to update!
-			LOG.info("last Update for character {}: {}, now: {}", character.getName(), lastUpdate, donationDate);
-			return null;
-		}
+		//		if (lastUpdate.isAfter(donationDate)) {
+		//			// no need to update!
+		//			LOG.info("last Update for character {}: {}, now: {}", character.getName(), lastUpdate, donationDate);
+		//			return null;
+		//		}
 		return character;
 	}
 

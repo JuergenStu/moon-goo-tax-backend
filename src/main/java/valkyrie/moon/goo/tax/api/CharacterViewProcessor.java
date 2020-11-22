@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import valkyrie.moon.goo.tax.character.Character;
 import valkyrie.moon.goo.tax.character.CharacterRepository;
+import valkyrie.moon.goo.tax.corp.wallet.TransactionLog;
+import valkyrie.moon.goo.tax.corp.wallet.TransactionLogRepository;
 import valkyrie.moon.goo.tax.marketData.dtos.MoonOre;
 
 @Component
@@ -21,6 +23,8 @@ public class CharacterViewProcessor {
 	private CharacterViewRepository characterViewRepository;
 	@Autowired
 	private CharacterRepository characterRepository;
+	@Autowired
+	private TransactionLogRepository transactionLogRepository;
 
 	public void prepareCharacterView() {
 
@@ -42,6 +46,9 @@ public class CharacterViewProcessor {
 		characterView.setMinedOre(prepareMinedOre(character));
 		characterView.setDebt(character.getDept().getToPay());
 		characterView.setCorpName(character.getCorpName());
+		// get transaction logs
+		List<TransactionLog> transactionLogs = transactionLogRepository.findByCharacterName(character.getName());
+		characterView.setTransactionLogs(transactionLogs);
 		characterViews.add(characterView);
 	}
 

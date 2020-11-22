@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import valkyrie.moon.goo.tax.corp.wallet.TransactionLog;
+
 @Document
 public class CharacterView {
 
@@ -15,16 +17,19 @@ public class CharacterView {
 	private String corpName;
 	private Long debt;
 	private List<MinedOre> minedOre;
+	private List<TransactionLog> transactionLogs;
 
 	public CharacterView() {
 	}
 
-	public CharacterView(Integer id, String name, String corpName, Long debt, List<MinedOre> minedOre) {
+	public CharacterView(Integer id, String name, String corpName, Long debt, List<MinedOre> minedOre,
+			List<TransactionLog> transactionLogs) {
 		this.id = id;
 		this.name = name;
 		this.corpName = corpName;
 		this.debt = debt;
 		this.minedOre = minedOre;
+		this.transactionLogs = transactionLogs;
 	}
 
 	public Integer getId() {
@@ -67,6 +72,14 @@ public class CharacterView {
 		this.minedOre = minedOre;
 	}
 
+	public List<TransactionLog> getTransactionLogs() {
+		return transactionLogs;
+	}
+
+	public void setTransactionLogs(List<TransactionLog> transactionLogs) {
+		this.transactionLogs = transactionLogs;
+	}
+
 	@Override
 	public String toString() {
 		return "CharacterView{" +
@@ -75,6 +88,7 @@ public class CharacterView {
 				", corpName='" + corpName + '\'' +
 				", debt=" + debt +
 				", minedOre=" + minedOre +
+				", transactionLogs=" + transactionLogs +
 				'}';
 	}
 }

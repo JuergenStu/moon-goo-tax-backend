@@ -1,6 +1,6 @@
 package valkyrie.moon.goo.tax.corp.wallet;
 
-import java.time.LocalDate;
+import java.util.Date;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -9,23 +9,23 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class TransactionLog {
 
 	@Id
-	private Integer id;
+	private String id;
 	private String characterName;
 	private String corp;
 	private Double amount;
-	private LocalDate transactionDate;
+	private Date transactionDate;
 
 	public TransactionLog() {
 	}
 
-	public TransactionLog(String characterName, String corp, Double amount, LocalDate transactionDate) {
+	public TransactionLog(String characterName, String corp, Double amount, Date transactionDate) {
 		this.characterName = characterName;
 		this.corp = corp;
 		this.amount = amount;
 		this.transactionDate = transactionDate;
 	}
 
-	public TransactionLog(Integer id, String characterName, String corp, Double amount, LocalDate transactionDate) {
+	public TransactionLog(String id, String characterName, String corp, Double amount, Date transactionDate) {
 		this.id = id;
 		this.characterName = characterName;
 		this.corp = corp;
@@ -33,11 +33,11 @@ public class TransactionLog {
 		this.transactionDate = transactionDate;
 	}
 
-	public int getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
@@ -65,11 +65,11 @@ public class TransactionLog {
 		this.amount = amount;
 	}
 
-	public LocalDate getTransactionDate() {
+	public Date getTransactionDate() {
 		return transactionDate;
 	}
 
-	public void setTransactionDate(LocalDate transactionDate) {
+	public void setTransactionDate(Date transactionDate) {
 		this.transactionDate = transactionDate;
 	}
 
