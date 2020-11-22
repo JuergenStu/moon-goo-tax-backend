@@ -104,7 +104,9 @@ public class Auth {
 		//		esi-industry.read_corporation_mining.v1
 
 		final Set<String> scopes = ImmutableSet
-				.of(SsoScopes.ESI_WALLET_READ_CORPORATION_WALLETS_V1, SsoScopes.ESI_INDUSTRY_READ_CORPORATION_MINING_V1);
+				.of(SsoScopes.ESI_WALLET_READ_CORPORATION_WALLETS_V1,
+						SsoScopes.ESI_INDUSTRY_READ_CORPORATION_MINING_V1,
+						SsoScopes.ESI_UNIVERSE_READ_STRUCTURES_V1);
 		String redirectUri;
 		if (System.getenv(sso_callback_url) != null) {
 			redirectUri = System.getenv().get("SSO_CALLBACK_URL");

@@ -16,8 +16,10 @@ import org.springframework.stereotype.Component;
 
 import net.troja.eve.esi.ApiException;
 import net.troja.eve.esi.api.IndustryApi;
+import net.troja.eve.esi.api.UniverseApi;
 import net.troja.eve.esi.model.CorporationMiningObserverResponse;
 import net.troja.eve.esi.model.CorporationMiningObserversResponse;
+import net.troja.eve.esi.model.StructureResponse;
 import valkyrie.moon.goo.tax.DateUtils;
 import valkyrie.moon.goo.tax.api.CharacterViewProcessor;
 import valkyrie.moon.goo.tax.api.MiningHistoryView;
@@ -34,6 +36,8 @@ import valkyrie.moon.goo.tax.marketData.dtos.MoonOreReprocessConstants;
 import valkyrie.moon.goo.tax.marketData.dtos.RefinedMoonOre;
 import valkyrie.moon.goo.tax.marketData.moonOre.MoonOreRepository;
 import valkyrie.moon.goo.tax.marketData.refinedMoonOre.RefinedMoonOreRepository;
+import valkyrie.moon.goo.tax.observer.ObserverStation;
+import valkyrie.moon.goo.tax.observer.ObserverStationRepository;
 import valkyrie.moon.goo.tax.statistics.StatisticsCalculator;
 
 @Component
@@ -60,12 +64,15 @@ public class CorpMiningFetcher {
 	private MiningHistoryRepository miningHistoryRepository;
 	@Autowired
 	private MiningHistoryViewRepository miningHistoryViewRepository;
+	private final UniverseApi universeApi = new UniverseApi();
 	@Autowired
 	private CharacterViewProcessor characterViewProcessor;
 	@Autowired
 	private StatisticsCalculator statisticsCalculator;
 
 	private final IndustryApi industryApi = new IndustryApi();
+	@Autowired
+	private ObserverStationRepository observerStationRepository;
 	private UpdateTimeTracker updateTimeTracker;
 
 	public void fetchMiningStatistics() {
@@ -80,6 +87,7 @@ public class CorpMiningFetcher {
 			return;
 		}
 		industryApi.setApiClient(api.getApi());
+		universeApi.setApiClient(api.getApi());
 		List<RefinedMoonOre> refinedMoonOres = refinedMoonOreRepository.findAll();
 
 		try {
@@ -145,14 +153,31 @@ public class CorpMiningFetcher {
 			List<CorporationMiningObserverResponse> observerResponse = industryApi
 					.getCorporationCorporationIdMiningObserversObserverId(corpId, observersResponse.getObserverId(), EsiApi.DATASOURCE, null, null,
 							null);
+
+			// check if the observer is already in db - if not add it
+			ObserverStation observerStation = fetchObserverName(observersResponse);
+
 			LOG.info("Processing {} mining log entries...", observerResponse.size());
-			processObserverEntries(refinedMoonOres, touchedChars, observerResponse, today);
+			processObserverEntries(refinedMoonOres, touchedChars, observerResponse, today, observerStation.getName());
 		}
 		return touchedChars;
 	}
 
+	private ObserverStation fetchObserverName(CorporationMiningObserversResponse observersResponse) throws ApiException {
+		Optional<ObserverStation> observerId = observerStationRepository.findById(observersResponse.getObserverId());
+		if (!observerId.isPresent()) {
+			// fetch name
+			StructureResponse universeStructuresStructureId = universeApi
+					.getUniverseStructuresStructureId(observersResponse.getObserverId(), EsiApi.DATASOURCE, null, null);
+			ObserverStation station = new ObserverStation(observersResponse.getObserverId(), universeStructuresStructureId.getName());
+			observerStationRepository.save(station);
+			return station;
+		}
+		return observerId.get();
+	}
+
 	private void processObserverEntries(List<RefinedMoonOre> refinedMoonOres, Map<Integer, Character> touchedChars,
-			List<CorporationMiningObserverResponse> observerResponse, LocalDate today) {
+			List<CorporationMiningObserverResponse> observerResponse, LocalDate today, String observerName) {
 		for (CorporationMiningObserverResponse miner : observerResponse) {
 			LocalDate lastUpdated = miner.getLastUpdated();
 			LocalDate yesterday = today.minusDays(1);
@@ -178,7 +203,7 @@ public class CorpMiningFetcher {
 
 			miningHistoryRepository.save(miningHistory);
 			miningHistoryViewRepository.save(new MiningHistoryView(character.getName(), minedMoonOre.get(miner.getTypeId()).getVisualName(),
-					Math.toIntExact(miner.getQuantity()), lastUpdate));
+					Math.toIntExact(miner.getQuantity()), lastUpdate, observerName));
 		}
 	}
 

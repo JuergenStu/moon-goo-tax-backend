@@ -14,11 +14,13 @@ public class MiningHistoryView {
 	public String oreName;
 	public Integer quantity;
 	public Date minedDate;
+	public String minedStationName;
 
-	public MiningHistoryView(String characterName, String oreName, Integer quantity, Date minedDate) {
+	public MiningHistoryView(String characterName, String oreName, Integer quantity, Date minedDate, String minedStationName) {
 		this.characterName = characterName;
 		this.oreName = oreName;
 		this.quantity = quantity;
 		this.minedDate = minedDate;
+		this.minedStationName = minedStationName;
 	}
 }
