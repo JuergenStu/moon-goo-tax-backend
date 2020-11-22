@@ -119,18 +119,18 @@ public class CorpMiningFetcher {
 			return null;
 		}
 		updateTimeTracker = all.get();
-		//		if (updateTimeTracker.getUpdatedToday()) {
-		//			LOG.info("Already updated today... skipping run...");
-		//			return null;
-		//		}
+		if (updateTimeTracker.getUpdatedToday()) {
+			LOG.info("Already updated today... skipping run...");
+			return null;
+		}
 		LocalDate today = DateUtils.convertToLocalDateViaInstant(new Date());
 
-		//		LocalDate lastUpdate = updateTimeTracker.getLastUpdate();
-		//		if (!lastUpdate.isBefore(today)) {
-		//			// nothing to update yet!
-		//			LOG.info("last update: {} | current date: {} - nothing to do yet.", lastUpdate, today);
-		//			return null;
-		//		}
+		LocalDate lastUpdate = updateTimeTracker.getLastUpdate();
+		if (!lastUpdate.isBefore(today)) {
+			// nothing to update yet!
+			LOG.info("last update: {} | current date: {} - nothing to do yet.", lastUpdate, today);
+			return null;
+		}
 		return today;
 	}
 
@@ -186,9 +186,7 @@ public class CorpMiningFetcher {
 			Map<Integer, MoonOre> minedMoonOre, Integer minedOreTypeId) {
 		long minedAmount = minedMoonOre.get(minedOreTypeId).getMinedAmount();// total mined for this type
 		minedMoonOre.get(minedOreTypeId).setMinedAmount(minedAmount + miner.getQuantity());
-		int currentDelta = minedMoonOre.get(minedOreTypeId).getDelta();
-		int additionalDelta = Math.toIntExact(miner.getQuantity());
-		minedMoonOre.get(minedOreTypeId).setDelta(currentDelta + additionalDelta);
+		minedMoonOre.get(minedOreTypeId).setDelta(Math.toIntExact(miner.getQuantity()));
 		touchedChars.put(character.getId(), character);
 	}
 

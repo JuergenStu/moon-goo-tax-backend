@@ -63,7 +63,6 @@ public class AuthController {
 
 	@RequestMapping("/preventUpdate")
 	public void preventUpdate() {
-		debtWorker.persistShouldUpdate(true);
+		debtWorker.persistShouldUpdate(false);
 	}
-
 }
