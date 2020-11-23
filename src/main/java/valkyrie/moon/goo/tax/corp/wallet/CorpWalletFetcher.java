@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import net.troja.eve.esi.ApiException;
 import net.troja.eve.esi.api.WalletApi;
 import net.troja.eve.esi.model.CorporationWalletJournalResponse;
-import valkyrie.moon.goo.tax.DateUtils;
 import valkyrie.moon.goo.tax.api.CharacterViewProcessor;
 import valkyrie.moon.goo.tax.auth.EsiApi;
 import valkyrie.moon.goo.tax.character.Character;
@@ -69,7 +68,7 @@ public class CorpWalletFetcher {
 				// save transaction
 				transactionLogRepository
 						.save(new TransactionLog(character.getName(), character.getCorpName(), entry.getAmount(),
-								DateUtils.convertToDateViaInstant(entry.getDate().toLocalDate())));
+								Date.from(entry.getDate().toInstant())));
 			});
 			// also update character view
 			characterViewProcessor.prepareCharacterView();
