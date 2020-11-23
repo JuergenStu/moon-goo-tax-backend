@@ -95,11 +95,11 @@ public class CorpWalletFetcher {
 
 		OffsetDateTime donationDate = entry.getDate();
 		OffsetDateTime lastUpdate = character.getDept().getLastUpdate().toInstant().atOffset(ZoneOffset.UTC);
-		//		if (lastUpdate.isAfter(donationDate)) {
-		//			// no need to update!
-		//			LOG.info("last Update for character {}: {}, now: {}", character.getName(), lastUpdate, donationDate);
-		//			return null;
-		//		}
+		if (lastUpdate.isAfter(donationDate)) {
+			// no need to update!
+			LOG.info("last Update for character {}: {}, now: {}", character.getName(), lastUpdate, donationDate);
+			return null;
+		}
 		return character;
 	}
 
