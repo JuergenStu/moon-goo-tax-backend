@@ -30,7 +30,7 @@ public class RefinedMoonOreFetcher extends EsiFetcher {
 
 	Logger LOGGER = LoggerFactory.getLogger(RefinedMoonOreFetcher.class);
 	private static final String GROUP_ID_URLS = "https://esi.evetech.net/latest/universe/groups/427/?datasource=tranquility&language=en-us";
-	private static final String PRICE_URL = "https://market.fuzzwork.co.uk/aggregates/?region=30000142&types=";
+	private static final String PRICE_URL = "https://market.fuzzwork.co.uk/aggregates/?region=%s&types=";
 	private static final String JITA_REGION_ID = "30000142";
 	private static final String PERIMETER_REGION_ID = "30000144";
 
@@ -45,12 +45,19 @@ public class RefinedMoonOreFetcher extends EsiFetcher {
 			ObjectMapper mapper = new ObjectMapper();
 			List<TypeName> typeNames = fetchNames(mapper.writeValueAsString(group.getTypes()), new URL(NAME_URLS), TypeName.class);
 
-			// fetch prices
-			List<RefinedMoonOre> moonOrePrices = fetchPrices(typeNames, group.getTypes());
+			// fetch prices jita
+			List<RefinedMoonOre> moonOrePricesJita = getRefinedMoonOres(group, typeNames, String.format(PRICE_URL, JITA_REGION_ID));
+
+			// fetch prices perimeter
+			List<RefinedMoonOre> moonOrePricesPerimeter = getRefinedMoonOres(group, typeNames, String.format(PRICE_URL, PERIMETER_REGION_ID));
+
+			// compare those two and take the more expensive price
+			List<RefinedMoonOre> finalPrices = calculateFinalPrices(moonOrePricesPerimeter, moonOrePricesJita);
+
 			// save moon ore prices to mongodb
-			LOGGER.info("Saving {} refined moon ore prices to DB", moonOrePrices.size());
-			repository.saveAll(moonOrePrices);
-			return moonOrePrices;
+			LOGGER.info("Saving {} refined moon ore prices to DB", finalPrices.size());
+			repository.saveAll(finalPrices);
+			return finalPrices;
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -58,9 +65,30 @@ public class RefinedMoonOreFetcher extends EsiFetcher {
 		return null;
 	}
 
-	private List<RefinedMoonOre> fetchPrices(List<TypeName> names, Set<Integer> types) throws IOException {
+	private List<RefinedMoonOre> calculateFinalPrices(List<RefinedMoonOre> moonOrePricesPerimeter, List<RefinedMoonOre> moonOrePricesJita) {
+		List<RefinedMoonOre> finalPrices = new ArrayList<>();
 
-		URL url = new URL(PRICE_URL + types.stream().map(String::valueOf).collect(Collectors.joining(",")));
+		for (RefinedMoonOre refinedMoonOreJita : moonOrePricesJita) {
+			for (RefinedMoonOre refinedMoonOrePreimeter : moonOrePricesPerimeter) {
+				if (refinedMoonOreJita.getName().equals(refinedMoonOrePreimeter.getName())) {
+					if (refinedMoonOreJita.getPrice() > refinedMoonOrePreimeter.getPrice()) {
+						finalPrices.add(refinedMoonOreJita);
+					} else {
+						finalPrices.add(refinedMoonOrePreimeter);
+					}
+				}
+			}
+		}
+		return finalPrices;
+	}
+
+	private List<RefinedMoonOre> getRefinedMoonOres(UniverseGroups group, List<TypeName> typeNames, String url) throws IOException {
+		URL moonOreUrl = new URL(url + group.getTypes().stream().map(String::valueOf).collect(Collectors.joining(",")));
+		return fetchPrices(typeNames, group.getTypes(), moonOreUrl);
+	}
+
+	private List<RefinedMoonOre> fetchPrices(List<TypeName> names, Set<Integer> types, URL moonOreUrl) throws IOException {
+		URL url = moonOreUrl;
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("GET");
 		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
