@@ -23,8 +23,8 @@ Make sure you have following environment variables set:
 * ~~show current refined ore prices~~
 * ~~chek mining multiple times a day to prevent API outage~~
 * ~~also let char specify a reason when transfering money~~
-* ~~reset delta daily~
-* save mining history
+* ~~reset delta daily~~
+* ~~save mining history~~
 
 * how to pass parameters into angular config
  

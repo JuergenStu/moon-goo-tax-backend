@@ -106,7 +106,7 @@ public class CorpWalletFetcher {
 		// valid character
 		Character character = null;
 		if (reason != null && !reason.isEmpty()) {
-			character = characterManagement.findByName(reason);
+			character = characterManagement.findByName(reason.trim());
 		}
 
 		if (character == null) {

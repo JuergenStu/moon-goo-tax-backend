@@ -31,7 +31,8 @@ public class RefinedMoonOreFetcher extends EsiFetcher {
 	Logger LOGGER = LoggerFactory.getLogger(RefinedMoonOreFetcher.class);
 	private static final String GROUP_ID_URLS = "https://esi.evetech.net/latest/universe/groups/427/?datasource=tranquility&language=en-us";
 	private static final String PRICE_URL = "https://market.fuzzwork.co.uk/aggregates/?region=30000142&types=";
-
+	private static final String JITA_REGION_ID = "30000142";
+	private static final String PERIMETER_REGION_ID = "30000144";
 
 	@Autowired
 	private RefinedMoonOreRepository repository;
@@ -73,6 +74,11 @@ public class RefinedMoonOreFetcher extends EsiFetcher {
 
 		List<RefinedMoonOre> refinedMoonOres = new ArrayList<>();
 
+		parseTypes(names, types, object, refinedMoonOres);
+		return refinedMoonOres;
+	}
+
+	private void parseTypes(List<TypeName> names, Set<Integer> types, JsonObject object, List<RefinedMoonOre> refinedMoonOres) {
 		for (Integer id : types) {
 			JsonObject jsonElement = (JsonObject) object.get(id.toString());
 			JsonObject buy = (JsonObject) jsonElement.get("buy");
@@ -86,7 +92,6 @@ public class RefinedMoonOreFetcher extends EsiFetcher {
 			}
 			refinedMoonOres.add(new RefinedMoonOre(id.toString(), finalName, max, new Date()));
 		}
-		return refinedMoonOres;
 	}
 
 }
