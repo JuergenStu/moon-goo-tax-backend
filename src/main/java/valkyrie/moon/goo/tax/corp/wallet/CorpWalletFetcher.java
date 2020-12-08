@@ -2,6 +2,7 @@ package valkyrie.moon.goo.tax.corp.wallet;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import net.troja.eve.esi.ApiException;
 import net.troja.eve.esi.api.WalletApi;
 import net.troja.eve.esi.model.CorporationWalletJournalResponse;
+import valkyrie.moon.goo.tax.DateUtils;
 import valkyrie.moon.goo.tax.api.CharacterViewProcessor;
 import valkyrie.moon.goo.tax.auth.EsiApi;
 import valkyrie.moon.goo.tax.character.Character;
@@ -56,7 +58,12 @@ public class CorpWalletFetcher {
 			LOG.info("Found {} wallet  for division {}...", corporationsCorporationIdWalletsDivisionJournal.size(),
 					persistedConfigPropertiesRepository.findAll().get(0).getDivision());
 
-			corporationsCorporationIdWalletsDivisionJournal.forEach(entry -> {
+			// sort entries by date - also only get player donations
+
+			List<CorporationWalletJournalResponse> sortedJournalResponses = sortEntriesByDate(
+					corporationsCorporationIdWalletsDivisionJournal);
+
+			sortedJournalResponses.forEach(entry -> {
 				Character character = checkPreConditions(entry);
 				if (character == null) {
 					return;
@@ -77,12 +84,24 @@ public class CorpWalletFetcher {
 		}
 	}
 
+	private List<CorporationWalletJournalResponse> sortEntriesByDate(
+			List<CorporationWalletJournalResponse> corporationsCorporationIdWalletsDivisionJournal) {
+		List<CorporationWalletJournalResponse> sortedJournalResponses = new ArrayList<>();
+		for (CorporationWalletJournalResponse corporationWalletJournalResponse : corporationsCorporationIdWalletsDivisionJournal) {
+			if (corporationWalletJournalResponse.getRefType() != CorporationWalletJournalResponse.RefTypeEnum.PLAYER_DONATION) {
+				continue;
+			}
+			sortedJournalResponses.add(corporationWalletJournalResponse);
+		}
+
+		sortedJournalResponses.sort((CorporationWalletJournalResponse r1, CorporationWalletJournalResponse r2) -> {
+			return r1.getDate().compareTo(r2.getDate());
+		});
+		return sortedJournalResponses;
+	}
+
 	private Character checkPreConditions(CorporationWalletJournalResponse entry) {
 		Integer firstPartyId = entry.getFirstPartyId();
-
-		if (entry.getRefType() != CorporationWalletJournalResponse.RefTypeEnum.PLAYER_DONATION) {
-			return null;
-		}
 		String reason = entry.getReason();
 		LOG.debug("Found player donation: {}", entry);
 		Character character = getCharacterFromDb(firstPartyId, reason);
@@ -99,6 +118,7 @@ public class CorpWalletFetcher {
 			LOG.info("last Update for character {}: {}, now: {}", character.getName(), lastUpdate, donationDate);
 			return null;
 		}
+		character.getDept().setLastUpdate(DateUtils.convertOffsetDateToDate(donationDate));
 		return character;
 	}
 
@@ -124,6 +144,6 @@ public class CorpWalletFetcher {
 		Debt dept = character.getDept();
 		dept.setHasPayed((long) (dept.getHasPayed() + amount));
 		dept.setToPay((long) (dept.getToPay() - amount));
-		dept.setLastUpdate(new Date());
+		//		dept.setLastUpdate(new Date());
 	}
 }
