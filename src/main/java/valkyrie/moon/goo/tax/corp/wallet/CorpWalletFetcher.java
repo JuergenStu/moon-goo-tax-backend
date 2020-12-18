@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import net.troja.eve.esi.ApiException;
 import net.troja.eve.esi.api.WalletApi;
 import net.troja.eve.esi.model.CorporationWalletJournalResponse;
@@ -59,29 +61,31 @@ public class CorpWalletFetcher {
 					persistedConfigPropertiesRepository.findAll().get(0).getDivision());
 
 			// sort entries by date - also only get player donations
-
 			List<CorporationWalletJournalResponse> sortedJournalResponses = sortEntriesByDate(
 					corporationsCorporationIdWalletsDivisionJournal);
-
-			sortedJournalResponses.forEach(entry -> {
-				Character character = checkPreConditions(entry);
-				if (character == null) {
-					return;
-				}
-				LOG.info("Calculating debt for {}", character.getName());
-
-				setDebt(entry, character);
-				characterManagement.saveChar(character);
-				// save transaction
-				transactionLogRepository
-						.save(new TransactionLog(character.getName(), character.getCorpName(), entry.getAmount(),
-								Date.from(entry.getDate().toInstant())));
-			});
+			calculateDebts(sortedJournalResponses);
 			// also update character view
 			characterViewProcessor.prepareCharacterView();
 		} catch (ApiException e) {
 			LOG.warn("WalletAPI not reachable or working...", e);
 		}
+	}
+
+	private void calculateDebts(List<CorporationWalletJournalResponse> sortedJournalResponses) {
+		sortedJournalResponses.forEach(entry -> {
+			Character character = checkPreConditions(entry);
+			if (character == null) {
+				return;
+			}
+			LOG.info("Calculating debt for {}", character.getName());
+
+			setDebt(entry, character);
+			characterManagement.saveChar(character);
+			// save transaction
+			transactionLogRepository
+					.save(new TransactionLog(character.getName(), character.getCorpName(), entry.getAmount(),
+							Date.from(entry.getDate().toInstant())));
+		});
 	}
 
 	private List<CorporationWalletJournalResponse> sortEntriesByDate(
@@ -115,7 +119,6 @@ public class CorpWalletFetcher {
 		OffsetDateTime lastUpdate = character.getDept().getLastUpdate().toInstant().atOffset(ZoneOffset.UTC);
 		if (lastUpdate.equals(donationDate) || lastUpdate.isAfter(donationDate)) {
 			// no need to update!
-			LOG.info("last Update for character {}: {}, now: {}", character.getName(), lastUpdate, donationDate);
 			return null;
 		}
 		character.getDept().setLastUpdate(DateUtils.convertOffsetDateToDate(donationDate));
@@ -139,11 +142,11 @@ public class CorpWalletFetcher {
 		return character;
 	}
 
-	private void setDebt(CorporationWalletJournalResponse entry, Character character) {
+	@VisibleForTesting
+	protected void setDebt(CorporationWalletJournalResponse entry, Character character) {
 		Double amount = entry.getAmount();
 		Debt dept = character.getDept();
 		dept.setHasPayed((long) (dept.getHasPayed() + amount));
 		dept.setToPay((long) (dept.getToPay() - amount));
-		//		dept.setLastUpdate(new Date());
 	}
 }
