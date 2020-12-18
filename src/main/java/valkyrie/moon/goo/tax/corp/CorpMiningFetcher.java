@@ -74,10 +74,16 @@ public class CorpMiningFetcher {
 	@Autowired
 	private ObserverStationRepository observerStationRepository;
 	private UpdateTimeTracker updateTimeTracker;
+	private PersistedConfigProperties config;
 
 	public void fetchMiningStatistics() {
+		config = persistedConfigPropertiesRepository.findById(1).get();
 
 		LocalDate today = checkDateRequirements();
+
+		// used for debugging
+		//		LocalDate today = DateUtils.convertToLocalDateViaInstant(new Date());
+
 		if (today == null)
 			return;
 
@@ -111,7 +117,11 @@ public class CorpMiningFetcher {
 		Map<Integer, Character> touchedChars = getMiningLog(leadChar.getCorpId(), refinedMoonOres, today);
 
 		// get debt
-		calculateDebt(refinedMoonOres, touchedChars);
+		//		calculateDebt(refinedMoonOres, touchedChars);
+
+		if (!touchedChars.isEmpty()) {
+			characterManagement.saveAll(new ArrayList<>(touchedChars.values()));
+		}
 		// calculate statistics
 		statisticsCalculator.calculateStatistics();
 		// and prepare character views
@@ -182,9 +192,9 @@ public class CorpMiningFetcher {
 			LocalDate lastUpdated = miner.getLastUpdated();
 			LocalDate yesterday = today.minusDays(1);
 
-			if (!lastUpdated.isEqual(yesterday)) {
+			if (!lastUpdated.isEqual(yesterday) || miner.getQuantity() < 100) {
 				// we already calculated that or its not relevant
-				// we only want ledger data from yesterday
+				// we only want ledger data from yesterday and quantities above 99
 				continue;
 			}
 
@@ -195,16 +205,26 @@ public class CorpMiningFetcher {
 
 			prepareMoonOre(minedMoonOre, minedOreTypeId, refinedMoonOres);
 			setDetails(touchedChars, miner, character, minedMoonOre, minedOreTypeId);
-			// save to history:
 
 			Date lastUpdate = DateUtils.convertToDateViaInstant(miner.getLastUpdated());
-			MiningHistory miningHistory = new MiningHistory(character.getId(), miner.getQuantity(), miner.getTypeId(),
-					lastUpdate);
 
-			miningHistoryRepository.save(miningHistory);
-			miningHistoryViewRepository.save(new MiningHistoryView(character.getName(), minedMoonOre.get(miner.getTypeId()).getVisualName(),
-					Math.toIntExact(miner.getQuantity()), lastUpdate, observerName));
+			long toPay = character.getDept().getToPay();
+			long value = calculatePrice(prepareRefinedMoonOreMap(refinedMoonOres), minedMoonOre.get(miner.getTypeId()));
+
+			MiningHistory miningHistory = new MiningHistory(character.getId(), miner.getQuantity(), miner.getTypeId(),
+					lastUpdate, value);
+
+			character.getDept().setToPay(toPay + value);
+
+			saveToDb(observerName, miner, character, minedMoonOre, lastUpdate, value, miningHistory);
 		}
+	}
+
+	private void saveToDb(String observerName, CorporationMiningObserverResponse miner, Character character, Map<Integer, MoonOre> minedMoonOre,
+			Date lastUpdate, long value, MiningHistory miningHistory) {
+		miningHistoryRepository.save(miningHistory);
+		miningHistoryViewRepository.save(new MiningHistoryView(character.getName(), minedMoonOre.get(miner.getTypeId()).getVisualName(),
+				Math.toIntExact(miner.getQuantity()), lastUpdate, observerName, value));
 	}
 
 	private void setDetails(Map<Integer, Character> touchedChars, CorporationMiningObserverResponse miner, Character character,
@@ -233,44 +253,28 @@ public class CorpMiningFetcher {
 		return character;
 	}
 
-	private void calculateDebt(List<RefinedMoonOre> refinedMoonOres, Map<Integer, Character> touchedChars) {
-		LOG.info("Calculating mining debt...");
-		PersistedConfigProperties config = persistedConfigPropertiesRepository.findById(1).get();
-		float refinementMultiplier = config.getRefinementMultiplier();
-		float tax = config.getTax();
-
-		// build refinedMoonOre datastructure:
+	private Map<String, Float> prepareRefinedMoonOreMap(List<RefinedMoonOre> refinedMoonOres) {
 		Map<String, Float> refinedMoonOreMap = new HashMap<>();
 
 		refinedMoonOres.forEach(ore -> {
 			refinedMoonOreMap.put(ore.name, ore.price);
 		});
-		List<Character> processedChars = new ArrayList<>();
-		for (Map.Entry<Integer, Character> touchedCharacter : touchedChars.entrySet()) {
-			float currentDept = 0;
-			Integer characterId = touchedCharacter.getKey();
-			Character character = touchedCharacter.getValue();
-			for (Map.Entry<Integer, MoonOre> minedOre : character.getMinedMoonOre().entrySet()) {
-				Integer oreId = minedOre.getKey();
-				MoonOre ore = minedOre.getValue();
-				currentDept = calculatePrice(refinementMultiplier, tax, refinedMoonOreMap, currentDept, ore);
-			}
-			character.getDept().setToPay((long) (character.getDept().getToPay() + currentDept));
-			character.getDept().setCharacterId(characterId);
-			processedChars.add(character);
-		}
-		characterManagement.saveAll(processedChars);
+		return refinedMoonOreMap;
 	}
 
-	private float calculatePrice(float refinementMultiplier, float tax, Map<String, Float> refinedMoonOreMap, float currentDept, MoonOre ore) {
+	private long calculatePrice(Map<String, Float> refinedMoonOreMap, MoonOre ore) {
+		float refinementMultiplier = config.getRefinementMultiplier();
+		float tax = config.getTax();
+		long lastPrice = 0L;
+
 		//calculate value of 100 pieces
 		List<Pair<String, Integer>> pairs = MoonOreReprocessConstants.reprocessConstants.get(ore.name);
 		for (Pair<String, Integer> pair : pairs) {
 			float price = refinedMoonOreMap.get(pair.getLeft());
 			float finalPrice = (float) (price * pair.getRight() * refinementMultiplier * ore.getMultiplier() * tax);
-			currentDept += finalPrice * ((int) ore.getMinedAmount() / 100);
+			lastPrice += finalPrice * (int) (ore.getDelta() / 100);
 		}
-		return currentDept;
+		return lastPrice;
 	}
 
 	private void prepareMoonOre(Map<Integer, MoonOre> minedMoonOre, Integer minedOreTypeId, List<RefinedMoonOre> refinedMoonOres) {

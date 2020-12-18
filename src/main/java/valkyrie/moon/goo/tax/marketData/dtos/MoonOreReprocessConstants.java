@@ -15,17 +15,25 @@ public final class MoonOreReprocessConstants {
 	static {
 		Map<String, List<Pair<String, Integer>>> values = new HashMap<>();
 
-		// common ores
-		values.put("Cobaltite", ImmutableList.of(Pair.of("Cobalt", 40)));
-		values.put("Euxenite", ImmutableList.of(Pair.of("Scandium", 40)));
-		values.put("Scheelite", ImmutableList.of(Pair.of("Tungsten", 40)));
-		values.put("Titanite", ImmutableList.of(Pair.of("Titanium", 40)));
+		// those ores will not be taxed
+
+		//		// ubiquitous ores
+		//		values.put("Bitumens", ImmutableList.of(Pair.of("Hydrocarbons", 65)));
+		//		values.put("Coesite", ImmutableList.of(Pair.of("Silicates", 65)));
+		//		values.put("Sylvite", ImmutableList.of(Pair.of("Evaporite Deposits", 65)));
+		//		values.put("Zeolites", ImmutableList.of(Pair.of("Atmospheric Gases", 65)));
+		//
+		//		// common ores
+		//		values.put("Cobaltite", ImmutableList.of(Pair.of("Cobalt", 40)));
+		//		values.put("Euxenite", ImmutableList.of(Pair.of("Scandium", 40)));
+		//		values.put("Scheelite", ImmutableList.of(Pair.of("Tungsten", 40)));
+		//		values.put("Titanite", ImmutableList.of(Pair.of("Titanium", 40)));
 
 		// exceptional ores
 		values.put("Loparite", ImmutableList.of(Pair.of("Hydrocarbons", 20),
-												Pair.of("Scandium", 20),
-												Pair.of("Platinum", 10),
-												Pair.of("Promethium", 22)));
+				Pair.of("Scandium", 20),
+				Pair.of("Platinum", 10),
+				Pair.of("Promethium", 22)));
 		values.put("Monazite", ImmutableList.of(Pair.of("Evaporite Deposits", 20),
 				Pair.of("Tungsten", 20),
 				Pair.of("Chromium", 10),
@@ -53,14 +61,7 @@ public final class MoonOreReprocessConstants {
 				Pair.of("Titanium", 10),
 				Pair.of("Hafnium", 50)));
 
-		// ubiquitous ores
-		values.put("Bitumens", ImmutableList.of(Pair.of("Hydrocarbons", 65)));
-		values.put("Coesite", ImmutableList.of(Pair.of("Silicates", 65)));
-		values.put("Sylvite", ImmutableList.of(Pair.of("Evaporite Deposits", 65)));
-		values.put("Zeolites", ImmutableList.of(Pair.of("Atmospheric Gases", 65)));
-
 		// Uncommon ores
-
 		values.put("Chromite", ImmutableList.of(Pair.of("Hydrocarbons", 10),
 				Pair.of("Chromium", 40)));
 		values.put("Otavite", ImmutableList.of(Pair.of("Atmospheric Gases", 10),

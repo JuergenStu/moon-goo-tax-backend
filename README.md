@@ -25,6 +25,7 @@ Make sure you have following environment variables set:
 * ~~also let char specify a reason when transfering money~~
 * ~~reset delta daily~~
 * ~~save mining history~~
+* add approx. value to actual mining entry
 
 * how to pass parameters into angular config
  

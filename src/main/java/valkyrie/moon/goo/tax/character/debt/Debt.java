@@ -53,4 +53,31 @@ public class Debt {
 	public String toString() {
 		return "Debt{" + "characterId=" + characterId + ", hasPayed=" + hasPayed + ", toPay=" + toPay + ", lastUpdate=" + lastUpdate + '}';
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof Debt))
+			return false;
+
+		Debt debt = (Debt) o;
+
+		if (hasPayed != debt.hasPayed)
+			return false;
+		if (toPay != debt.toPay)
+			return false;
+		if (characterId != null ? !characterId.equals(debt.characterId) : debt.characterId != null)
+			return false;
+		return lastUpdate != null ? lastUpdate.equals(debt.lastUpdate) : debt.lastUpdate == null;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = characterId != null ? characterId.hashCode() : 0;
+		result = 31 * result + (int) (hasPayed ^ (hasPayed >>> 32));
+		result = 31 * result + (int) (toPay ^ (toPay >>> 32));
+		result = 31 * result + (lastUpdate != null ? lastUpdate.hashCode() : 0);
+		return result;
+	}
 }

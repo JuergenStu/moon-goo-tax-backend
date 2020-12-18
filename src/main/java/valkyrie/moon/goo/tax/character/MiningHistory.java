@@ -15,21 +15,23 @@ public class MiningHistory {
 	public long quantity;
 	public long typeId;
 	public Date minedDate;
+	public long value;
 
-	public MiningHistory() {
-	}
-
-	public MiningHistory(int characterId, long quantity, long typeId) {
-		this.characterId = characterId;
-		this.quantity = quantity;
-		this.typeId = typeId;
-	}
-
-	public MiningHistory(int characterId, long quantity, long typeId, Date minedDate) {
+	public MiningHistory(int characterId, long quantity, long typeId, Date minedDate, long value) {
 		this.characterId = characterId;
 		this.quantity = quantity;
 		this.typeId = typeId;
 		this.minedDate = minedDate;
+		this.value = value;
+	}
+
+	public MiningHistory(String id, int characterId, long quantity, long typeId, Date minedDate, long value) {
+		this.id = id;
+		this.characterId = characterId;
+		this.quantity = quantity;
+		this.typeId = typeId;
+		this.minedDate = minedDate;
+		this.value = value;
 	}
 
 	public String getId() {
@@ -72,14 +74,12 @@ public class MiningHistory {
 		this.minedDate = minedDate;
 	}
 
-	@Override
-	public String toString() {
-		return "MiningHistory{" +
-				"id=" + id +
-				", characterId=" + characterId +
-				", quantity=" + quantity +
-				", typeId=" + typeId +
-				", minedDate=" + minedDate +
-				'}';
+	public long getValue() {
+		return value;
 	}
+
+	public void setValue(long value) {
+		this.value = value;
+	}
+
 }
