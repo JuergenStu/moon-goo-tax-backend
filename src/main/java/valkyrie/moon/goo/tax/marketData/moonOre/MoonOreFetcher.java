@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,11 +25,12 @@ import valkyrie.moon.goo.tax.marketData.refinedMoonOre.RefinedMoonOreFetcher;
 @Component
 public class MoonOreFetcher extends EsiFetcher {
 
+	private static final Logger LOG = LoggerFactory.getLogger(MoonOreFetcher.class);
+
 	private static final String GROUP_ID_URLS = "https://esi.evetech.net/latest/universe/groups/%s/?datasource=tranquility&language=en-us";
 	private static final Set<String> MOON_ORE_GROUP_IDS = ImmutableSet.of("1920", "1923", "1922", "1884", "1921");
 	private static final Set<String> DOUBLE_VALUE = ImmutableSet.of("Twinkling", "Shining", "Glowing", "Glistering", "Shimmering");
 	private static final Set<String> A_BIT_MORE_VALUE = ImmutableSet.of("Copious", "Bountiful", "Replete", "Brimful", "Lavish");
-
 
 	@Autowired
 	private RefinedMoonOreFetcher refinedMoonOreFetcher;
@@ -53,6 +56,10 @@ public class MoonOreFetcher extends EsiFetcher {
 				List<TypeName> typeNames = fetchNames(mapper.writeValueAsString(group.getTypes()),
 						new URL(NAME_URLS), TypeName.class);
 
+				if (typeNames == null) {
+					LOG.warn("Typenames are {} - most likely eve API failed.", typeNames);
+					return;
+				}
 				prepareAndSave(typeNames);
 			} catch (IOException e) {
 				e.printStackTrace();

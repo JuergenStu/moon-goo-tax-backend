@@ -82,7 +82,7 @@ public class CorpMiningFetcher {
 		LocalDate today = checkDateRequirements();
 
 		// used for debugging
-		//		LocalDate today = DateUtils.convertToLocalDateViaInstant(new Date());
+		//				LocalDate today = DateUtils.convertToLocalDateViaInstant(new Date());
 
 		if (today == null)
 			return;
@@ -203,7 +203,10 @@ public class CorpMiningFetcher {
 			Map<Integer, MoonOre> minedMoonOre = character.getMinedMoonOre();
 			Integer minedOreTypeId = miner.getTypeId();
 
-			prepareMoonOre(minedMoonOre, minedOreTypeId, refinedMoonOres);
+			MoonOre moonOre = prepareMoonOre(minedMoonOre, minedOreTypeId, refinedMoonOres);
+			if (moonOre == null) {
+				continue;
+			}
 			setDetails(touchedChars, miner, character, minedMoonOre, minedOreTypeId);
 
 			Date lastUpdate = DateUtils.convertToDateViaInstant(miner.getLastUpdated());
@@ -269,6 +272,9 @@ public class CorpMiningFetcher {
 
 		//calculate value of 100 pieces
 		List<Pair<String, Integer>> pairs = MoonOreReprocessConstants.reprocessConstants.get(ore.name);
+		if (pairs == null) {
+			return lastPrice;
+		}
 		for (Pair<String, Integer> pair : pairs) {
 			float price = refinedMoonOreMap.get(pair.getLeft());
 			float finalPrice = (float) (price * pair.getRight() * refinementMultiplier * ore.getMultiplier() * tax);
@@ -277,19 +283,25 @@ public class CorpMiningFetcher {
 		return lastPrice;
 	}
 
-	private void prepareMoonOre(Map<Integer, MoonOre> minedMoonOre, Integer minedOreTypeId, List<RefinedMoonOre> refinedMoonOres) {
+	private MoonOre prepareMoonOre(Map<Integer, MoonOre> minedMoonOre, Integer minedOreTypeId, List<RefinedMoonOre> refinedMoonOres) {
 		Optional<MoonOre> minedOre = moonOreRepository.findById(String.valueOf(minedOreTypeId));
 		if (!minedOre.isPresent()) {
 			LOG.error("Did not find moon ore with id {}", minedOreTypeId);
+			return null;
 		} else {
 			MoonOre ore = minedOre.get();
 			List<Pair<String, Integer>> refinedPairs = MoonOreReprocessConstants.reprocessConstants.get(ore.getName());
+			if (refinedPairs == null) {
+				// its an ore which is not taxed
+				return null;
+			}
 			if (minedMoonOre.containsKey(minedOreTypeId)) {
 				MoonOre moonOre = minedMoonOre.get(minedOreTypeId);
 				moonOre.setMinedAmount(moonOre.getMinedAmount() + ore.getMinedAmount());
 			} else {
 				minedMoonOre.putIfAbsent(minedOreTypeId, ore);
 			}
+			return ore;
 		}
 	}
 }
