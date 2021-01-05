@@ -1,6 +1,7 @@
 package valkyrie.moon.goo.tax.auth;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,10 +17,12 @@ import net.troja.eve.esi.ApiClient;
 import net.troja.eve.esi.ApiClientBuilder;
 import net.troja.eve.esi.ApiException;
 import net.troja.eve.esi.api.CharacterApi;
+import net.troja.eve.esi.api.CorporationApi;
 import net.troja.eve.esi.auth.JWT;
 import net.troja.eve.esi.auth.OAuth;
 import net.troja.eve.esi.auth.SsoScopes;
 import net.troja.eve.esi.model.CharacterResponse;
+import net.troja.eve.esi.model.CorporationResponse;
 import valkyrie.moon.goo.tax.auth.dto.ClientCredentials;
 import valkyrie.moon.goo.tax.auth.repo.ClientCredentialsRepository;
 import valkyrie.moon.goo.tax.character.Character;
@@ -63,10 +66,20 @@ public class Auth {
 		Integer characterID = payload.getCharacterID();
 
 		CharacterApi api = new CharacterApi(client);
+		CorporationApi corporationApi = new CorporationApi(client);
 
 		CharacterResponse character = api.getCharactersCharacterId(characterID, EsiApi.DATASOURCE, null);
-		characterRepository.save(new Character(characterID, character.getName(), character.getCorporationId(), null, true,
-				new Debt(characterID, 0L, 0L, new Date(943916400000L)), null, null));
+		CorporationResponse corporationsCorporationId = corporationApi
+				.getCorporationsCorporationId(character.getCorporationId(), EsiApi.DATASOURCE, null);
+
+		Character leadChar = characterRepository.findByIsLead(true);
+		if (leadChar != null) {
+			leadChar.setLead(false);
+			characterRepository.save(leadChar);
+		}
+
+		characterRepository.save(new Character(characterID, character.getName(), character.getCorporationId(), corporationsCorporationId.getName(),
+				true, new Debt(characterID, 0L, 0L, new Date(943916400000L)), new HashMap<>(), new HashMap<>()));
 
 		// now start processing...
 		startProcessing();

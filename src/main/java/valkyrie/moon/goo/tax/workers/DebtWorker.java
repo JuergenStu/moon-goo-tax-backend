@@ -26,7 +26,6 @@ public class DebtWorker {
 	//	@Scheduled(fixedRate = 3_600_000, initialDelay = 3_600_000)
 	@Scheduled(cron = "0 30 1/4 * * *")
 	public void fetchMoonLedgerData() {
-		LOG.info("Fetching mining statistics...");
 		miningFetcher.fetchMiningStatistics();
 	}
 

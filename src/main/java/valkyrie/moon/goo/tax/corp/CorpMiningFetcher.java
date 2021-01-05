@@ -77,8 +77,15 @@ public class CorpMiningFetcher {
 	private PersistedConfigProperties config;
 
 	public void fetchMiningStatistics() {
-		config = persistedConfigPropertiesRepository.findById(1).get();
 
+		LOG.info("Fetching mining Statistics...");
+		Optional<PersistedConfigProperties> configOptional = persistedConfigPropertiesRepository.findById(1);
+		if (!configOptional.isPresent()) {
+			LOG.warn("No persisted config found - restart helps here.");
+			return;
+		}
+
+		config = configOptional.get();
 		LocalDate today = checkDateRequirements();
 
 		// used for debugging
@@ -201,6 +208,12 @@ public class CorpMiningFetcher {
 			Character character = lookupCharacter(touchedChars, miner.getCharacterId());
 
 			Map<Integer, MoonOre> minedMoonOre = character.getMinedMoonOre();
+
+			// sanity check
+			if (minedMoonOre == null) {
+				minedMoonOre = new HashMap<>();
+				character.setMinedMoonOre(minedMoonOre);
+			}
 			Integer minedOreTypeId = miner.getTypeId();
 
 			MoonOre moonOre = prepareMoonOre(minedMoonOre, minedOreTypeId, refinedMoonOres);

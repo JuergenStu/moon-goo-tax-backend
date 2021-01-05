@@ -8,6 +8,10 @@ group = 'valkyrie'
 version = '1.0.0'
 sourceCompatibility = '1.8'
 
+bootJar {
+    launchScript()
+}
+
 repositories {
     mavenCentral()
 }
