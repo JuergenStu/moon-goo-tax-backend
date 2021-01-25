@@ -28,7 +28,9 @@ Make sure you have following environment variables set:
 * ~~add approx. value to actual mining entry~~
 * ~~only let people auth once and a way to delete current primary character!~~
 * ~~there's a bug that the config is not persisted!~~
+* ~~can we have button "copy total debt to clipboard"?~~
+* ~~add button for copy the nickname~~
+
  
-Find 
 
  

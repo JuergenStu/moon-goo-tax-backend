@@ -20,7 +20,7 @@ public class ConfigurationController {
 	@Autowired
 	private MongoTemplate mongoTemplate;
 
-	@RequestMapping("/")
+//	@RequestMapping("/")
 	public String config() {
 		PersistedConfigProperties configProperties = repository.findById(1).get();
 
@@ -35,7 +35,7 @@ public class ConfigurationController {
 		return String.format(html, configProperties.getRefinementMultiplier(), configProperties.getTax(), configProperties.getDivision());
 	}
 
-	@RequestMapping("/save")
+	//	@RequestMapping("/save")
 	public String changeSettings(@RequestParam("refinementMultiplier") float refinementMultiplier,
 			@RequestParam("tax") float tax, @RequestParam("division") int division) {
 
@@ -51,7 +51,7 @@ public class ConfigurationController {
 		return msg;
 	}
 
-	@RequestMapping("/dropAll")
+	//	@RequestMapping("/dropAll")
 	public void dropAll() {
 		LOG.warn("Dropping all data from db...");
 		mongoTemplate.getDb().drop();
