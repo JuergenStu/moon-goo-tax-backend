@@ -18,7 +18,7 @@ public class PriceFetchWorker {
 	@Autowired
 	private CorpWalletFetcher corpWalletFetcher;
 
-	@Scheduled(fixedRate = 14400000) //= 4h
+	@Scheduled(fixedRate = 144_000_00) //= 4h
 	public void fetchMoonOreData() {
 		LOG.info("Fetching market data...");
 		moonOreFetcher.buildMoonOreDatabase();

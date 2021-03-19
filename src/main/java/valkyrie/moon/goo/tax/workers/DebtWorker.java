@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import valkyrie.moon.goo.tax.DebtManager;
 import valkyrie.moon.goo.tax.corp.CorpMiningFetcher;
 import valkyrie.moon.goo.tax.corp.UpdateTimeTracker;
 import valkyrie.moon.goo.tax.corp.UpdateTimeTrackerRepository;
@@ -21,6 +22,8 @@ public class DebtWorker {
 	private CorpMiningFetcher miningFetcher;
 	@Autowired
 	private UpdateTimeTrackerRepository updateTimeTrackerRepository;
+	@Autowired
+	private DebtManager debtManager;
 
 	// cron job: everyday, every 4h
 	//	@Scheduled(fixedRate = 3_600_000, initialDelay = 3_600_000)
@@ -34,6 +37,12 @@ public class DebtWorker {
 	public void resetUpdate() {
 		persistShouldUpdate(true);
 		miningFetcher.resetDelta();
+	}
+
+	// cron job: everyday Monday at 02:00 UTC
+	@Scheduled(cron = "0 0 2 * * MON")
+	public void increaseDebtIfNecessary() {
+		debtManager.increaseDebtIfNecessary();
 	}
 
 	public void persistShouldUpdate(boolean shouldUpdate) {

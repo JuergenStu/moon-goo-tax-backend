@@ -31,6 +31,7 @@ Make sure you have following environment variables set:
 * ~~can we have button "copy total debt to clipboard"?~~
 * ~~add button for copy the nickname~~
 
+* ~~add corporation payments as well~~
  
 
  

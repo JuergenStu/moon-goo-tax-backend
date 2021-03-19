@@ -60,7 +60,7 @@ public class CorpWalletFetcher {
 			LOG.info("Found {} wallet  for division {}...", corporationsCorporationIdWalletsDivisionJournal.size(),
 					persistedConfigPropertiesRepository.findAll().get(0).getDivision());
 
-			// sort entries by date - also only get player donations
+			// sort entries by date - also only get player and corporation donations
 			List<CorporationWalletJournalResponse> sortedJournalResponses = sortEntriesByDate(
 					corporationsCorporationIdWalletsDivisionJournal);
 			calculateDebts(sortedJournalResponses);
@@ -92,10 +92,10 @@ public class CorpWalletFetcher {
 			List<CorporationWalletJournalResponse> corporationsCorporationIdWalletsDivisionJournal) {
 		List<CorporationWalletJournalResponse> sortedJournalResponses = new ArrayList<>();
 		for (CorporationWalletJournalResponse corporationWalletJournalResponse : corporationsCorporationIdWalletsDivisionJournal) {
-			if (corporationWalletJournalResponse.getRefType() != CorporationWalletJournalResponse.RefTypeEnum.PLAYER_DONATION) {
-				continue;
+			if (corporationWalletJournalResponse.getRefType() == CorporationWalletJournalResponse.RefTypeEnum.PLAYER_DONATION
+					|| corporationWalletJournalResponse.getRefType() == CorporationWalletJournalResponse.RefTypeEnum.CORPORATION_PAYMENT) {
+				sortedJournalResponses.add(corporationWalletJournalResponse);
 			}
-			sortedJournalResponses.add(corporationWalletJournalResponse);
 		}
 
 		sortedJournalResponses.sort((CorporationWalletJournalResponse r1, CorporationWalletJournalResponse r2) -> {
