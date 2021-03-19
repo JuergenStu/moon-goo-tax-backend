@@ -42,6 +42,7 @@ public class DebtWorker {
 	// cron job: everyday Monday at 02:00 UTC
 	@Scheduled(cron = "0 0 2 * * MON")
 	public void increaseDebtIfNecessary() {
+		LOG.info("Running debt increase worker...");
 		debtManager.increaseDebtIfNecessary();
 	}
 
