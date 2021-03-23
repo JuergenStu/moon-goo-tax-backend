@@ -47,8 +47,8 @@ public class DebtManager {
 
 	public Character increaseDebtIfNecessary(Character character, TransactionLog transactionLog) {
 		Date transactionDate = transactionLog.getTransactionDate();
-		Date todayMinusTwoWeeks = DateUtils.convertToDateViaInstant(DateUtils.convertToLocalDateViaInstant(new Date()).minusWeeks(2));
-		if (transactionDate.before(todayMinusTwoWeeks)) {
+		Date todayMinusThreeWeeks = DateUtils.convertToDateViaInstant(DateUtils.convertToLocalDateViaInstant(new Date()).minusWeeks(3));
+		if (transactionDate.before(todayMinusThreeWeeks)) {
 			// increase by 10%
 			LOG.info("Increasing debt by 10% for {}.", character.getName());
 			long initialAmount = character.getDept().getToPay();
