@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import valkyrie.moon.goo.tax.character.Character;
+import valkyrie.moon.goo.tax.character.CharacterRepository;
 import valkyrie.moon.goo.tax.marketData.dtos.RefinedMoonOre;
 import valkyrie.moon.goo.tax.marketData.refinedMoonOre.RefinedMoonOreRepository;
 
@@ -29,6 +30,9 @@ public class InformationController {
 
 	@Autowired
 	private CharacterViewProcessor characterViewProcessor;
+
+	@Autowired
+	private CharacterRepository characterRepository;
 
 	@Autowired
 	private ApiHelper apiHelper;
@@ -56,5 +60,11 @@ public class InformationController {
 	@RequestMapping("/getMiningHistory")
 	public List<MiningHistoryView> getMiningHistory(@RequestParam String name) {
 		return miningHistoryViewRepository.findAllByCharacterName(name);
+	}
+
+	@RequestMapping("/holdingCorp")
+	public String getHoldingCorp() {
+		Character leadChar = characterRepository.findByIsLead(true);
+		return leadChar.getCorpName();
 	}
 }

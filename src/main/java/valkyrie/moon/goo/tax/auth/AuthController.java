@@ -11,7 +11,7 @@ import valkyrie.moon.goo.tax.corp.wallet.CorpWalletFetcher;
 import valkyrie.moon.goo.tax.workers.DebtWorker;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/auth")
 public class AuthController {
 
 	@Autowired
@@ -25,16 +25,17 @@ public class AuthController {
 
 	@RequestMapping("/")
 	public String index() {
-		return "Nothing to see here!";
-		//		String html = "Please click this link: <a href=\"" + auth.getAuthUrl() + "\">Eve Auth</a>";
-		//		html += "<br> Click here for statistics: <a href=\"/statistics/\">klick me </a>";
-		//		html += "<br> Click here for configuration: <a href=\"/configuration/\">klick me </a>";
-		//		html += "<br> Click here for the transaction log: <a href=\"/statistics/transactionLog/\">klick me </a>";
-		//		return html;
+		//		return "Nothing to see here!";
+		String html = "Please click this link: <a href=\"" + auth.getAuthUrl() + "\">Eve Auth</a>";
+		html += "<br> Click here for statistics: <a href=\"/statistics/\">klick me </a>";
+		html += "<br> Click here for configuration: <a href=\"/configuration/\">klick me </a>";
+		html += "<br> Click here for the transaction log: <a href=\"/statistics/transactionLog/\">klick me </a>";
+		html += "<br> Click here for the monthly report: <a href=\"/statistics/monthly/\">klick me </a>";
+		return html;
 	}
 
 	@RequestMapping(value = "/callback",
-			params = {"code", "state"},
+			params = { "code", "state" },
 			method = RequestMethod.GET)
 	public String callback(@RequestParam("code") String code, @RequestParam("state") String state) {
 
